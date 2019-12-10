@@ -26,6 +26,7 @@ class EventForm extends Component {
   };
 
   handleFormSubmit = evt => {
+    evt.preventDefault();
     const { createEvent } = this.props;
     createEvent(this.state);
   };
