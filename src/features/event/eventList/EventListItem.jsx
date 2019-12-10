@@ -16,7 +16,7 @@ class EventListItem extends Component {
                 src={event.hostPhotoURL}
               />
               <Item.Content>
-                <Item.Header as="a">{event.title}</Item.Header>
+                <Item.Header>{event.title}</Item.Header>
                 <Item.Description>
                   Hosted by {event.hostedBy}
                 </Item.Description>
@@ -32,7 +32,8 @@ class EventListItem extends Component {
         </Segment>
         <Segment secondary>{/*colours it different */}
           <List horizontal>
-            {event.attendees.map(attendee => (
+            {/*check of event has attenddes or not. Otherwise the code wont run */}
+            {event.attendees && event.attendees.map(attendee => (
               <EventListAttendee key={attendee.id} attendee={attendee}/>
             ))}
             
@@ -40,7 +41,7 @@ class EventListItem extends Component {
         </Segment>
         <Segment clearing>
             <span>{event.description}</span>
-          <Button as="a" color="teal" floated="right" content="View" />
+          <Button color="teal" floated="right" content="View" />
         </Segment>
       </Segment.Group>
     );

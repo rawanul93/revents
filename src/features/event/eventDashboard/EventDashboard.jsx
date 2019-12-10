@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import { Grid, Button } from "semantic-ui-react";
 import EventList from "../eventList/EventList";
 import EventForm from "../eventForm/EventForm";
+import cuid from "cuid"; //collision resistant ids. Its included in the package.json
 
 const eventsFromDashboard = [
   {
@@ -64,9 +65,26 @@ class EventDashboard extends Component {
     //setState lets you access what the prev state was
     //this allows us to use have toggle like features
     //below isOpen is always set to the opposite of what the prevState was
-    this.setState((prevState) =>({
-        isOpen: !prevState.isOpen
-    })) 
+    this.setState((prevState) => ({
+      isOpen: !prevState.isOpen
+    }));
+  };
+
+  handleCreateEvent = (newEvent) => {
+    newEvent.id = cuid();
+    newEvent.hostPhotoURL = "/assets/user.png";
+    this.setState(({ events }) => ({
+      //events is destructured from prevState.events
+      //we want to use the previous state to get the
+      //events that were there in previously so that we can
+      //add the new event properly
+      events: [...events, newEvent],
+      isOpen:false
+    }));
+    // ... is a spread operator. This abpve line is
+    //creating a new array where the this.state.events
+    //is spread out i.e. in this case spread into its 2 events
+    //and a third event, newEvent is added as well with a total of 3 events in the new array
   };
 
   render() {
@@ -83,7 +101,10 @@ class EventDashboard extends Component {
             onClick={this.handleIsOpenToggle}
           />
           {isOpen && (
-            <EventForm cancelFormOpen={this.handleIsOpenToggle}/>
+            <EventForm
+              createEvent={this.handleCreateEvent}
+              cancelFormOpen={this.handleIsOpenToggle}
+            />
           ) /* if isOpen true, then whatever is to the right of && will be executed*/}
         </Grid.Column>
       </Grid>
