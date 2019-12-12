@@ -4,22 +4,16 @@ import EventListAttendee from "./EventListAttendee";
 
 class EventListItem extends Component {
   render() {
-    const { event } = this.props;
+    const { event, selectEvent, deleteEvent } = this.props;
     return (
       <Segment.Group>
         <Segment>
           <Item.Group>
             <Item>
-              <Item.Image
-                size="tiny"
-                circular
-                src={event.hostPhotoURL}
-              />
+              <Item.Image size="tiny" circular src={event.hostPhotoURL} />
               <Item.Content>
                 <Item.Header>{event.title}</Item.Header>
-                <Item.Description>
-                  Hosted by {event.hostedBy}
-                </Item.Description>
+                <Item.Description>Hosted by {event.hostedBy}</Item.Description>
               </Item.Content>
             </Item>
           </Item.Group>
@@ -30,18 +24,30 @@ class EventListItem extends Component {
             <Icon name="marker" /> {event.venue}
           </span>
         </Segment>
-        <Segment secondary>{/*colours it different */}
+        <Segment secondary>
+          {/*colours it different */}
           <List horizontal>
             {/*check of event has attenddes or not. Otherwise the code wont run */}
-            {event.attendees && event.attendees.map(attendee => (
-              <EventListAttendee key={attendee.id} attendee={attendee}/>
-            ))}
-            
+            {event.attendees &&
+              event.attendees.map((attendee) => (
+                <EventListAttendee key={attendee.id} attendee={attendee} />
+              ))}
           </List>
         </Segment>
         <Segment clearing>
-            <span>{event.description}</span>
-          <Button color="teal" floated="right" content="View" />
+          <span>{event.description}</span>
+          <Button
+            onClick={() => deleteEvent(event.id)}/* doing it this way allows us to call the function ONLY if button is clicked*/
+            color="red"
+            floated="right"
+            content="Delete"
+          />
+          <Button
+            onClick={() => selectEvent(event)}/* doing it this way allows us to call the function ONLY if button is clicked*/
+            color="teal"
+            floated="right"
+            content="View"
+          />
         </Segment>
       </Segment.Group>
     );

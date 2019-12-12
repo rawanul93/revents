@@ -14,6 +14,18 @@ class EventForm extends Component {
     hostedBy: ""
   };
 
+  componentDidMount() {
+    if (this.props.selectedEvent !== null) {
+      //state is set here ONLY if there is a selected event.
+      this.setState({
+        ...this.props.selectedEvent
+        //the spread operator here takes each element
+        //in this.props.selectedEvent and spreads it
+        //into the matching elemets in our state
+        //i.e. title gets assigned title from selectedEvent now.
+      });
+    }
+  }
 
   handleInputChange = ({ target: { name, value } }) => {
     //destructuring event.target to get event.target.name and value
@@ -25,14 +37,16 @@ class EventForm extends Component {
     });
   };
 
-  handleFormSubmit = evt => {
+  handleFormSubmit = (evt) => {
     evt.preventDefault();
-    const { createEvent } = this.props;
-    createEvent(this.state);
+    const { createEvent, updateEvent } = this.props;
+    
+    this.state.id? updateEvent(this.state) : createEvent(this.state);
+    //using this.state to update because this.state carries the updated info and not selectedEvent
   };
 
   render() {
-    const { cancelFormOpen } = this.props;
+    const { cancelFormOpen, selectedEvent } = this.props;
     const { title, date, city, venue, hostedBy } = this.state;
     return (
       <Segment>
@@ -83,9 +97,15 @@ class EventForm extends Component {
               placeholder="Enter the name of person hosting"
             />
           </Form.Field>
-          <Button positive type="submit">
-            Submit
-          </Button>
+          {selectedEvent ? (
+            <Button positive type="submit">
+              Edit
+            </Button>
+          ) : (
+            <Button positive type="submit">
+              Submit
+            </Button>
+          )}
           <Button type="button" onClick={cancelFormOpen}>
             Cancel
           </Button>
