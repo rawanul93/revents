@@ -40,10 +40,10 @@ class EventForm extends Component {
   handleFormSubmit = (evt) => {
     evt.preventDefault();
     const { createEvent, updateEvent } = this.props;
-    
     this.state.id? updateEvent(this.state) : createEvent(this.state);
     //using this.state to update because this.state carries the updated info and not selectedEvent
   };
+
 
   render() {
     const { cancelFormOpen, selectedEvent } = this.props;
