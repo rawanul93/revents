@@ -9,7 +9,7 @@ const SignedOutMenu = ({ signIn }) => {
         inverted
         content="Login"
         onClick={signIn} 
-        hitor
+      
       />
       <Button
         basic

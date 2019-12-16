@@ -12,7 +12,7 @@ const SettingsDashboard = () => {
     <Grid>
       <GridColumn width={12}>
         <Switch> {/* this switch renders a route exclusively, i.e. we end up not renderig too many routes*/}
-          <Redirect exact from="/settings" to="settings/basic" />
+          <Redirect exact from="/settings" to="settings/basic" />{/*by default if route is settings, it goes to settings/basic */}
           <Route path="/settings/basic" component={BasicPage} />
           <Route path="/settings/about" component={AboutPage} />
           <Route path="/settings/photos" component={PhotosPage} />

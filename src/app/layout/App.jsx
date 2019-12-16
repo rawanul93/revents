@@ -9,6 +9,7 @@ import PeopleDashboard from "../../features/user/peopleDashboard/PeopleDashboard
 import UserDetailedPage from "../../features/user/userDetailed/UserDetailedPage";
 import SettingsDashboard from "../../features/user/settings/SettingsDashboard";
 import EventForm from "../../features/event/eventForm/EventForm";
+import TestComponent from "../../features/testarea/TestComponent";
 
 //Fragment doesnt show up in our retunred HTML
 
@@ -31,6 +32,7 @@ class App extends Component {
                 <Route path="/profile/:id" component={UserDetailedPage}></Route>
                 <Route path="/settings" component={SettingsDashboard}></Route>
                 <Route path="/createEvent" component={EventForm}></Route>
+                <Route path="/test" component={TestComponent}></Route>
               </Container>
             </Fragment>
           )}
