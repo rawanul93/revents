@@ -51,4 +51,4 @@ class App extends Component {
   }
 }
 
-export default withRouter(App);
+export default withRouter(App);//so that app has router properties we can use for getting key location for Switch

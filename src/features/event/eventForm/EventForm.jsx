@@ -1,9 +1,8 @@
 import React, { Component } from "react";
 import { Segment, Form, Button } from "semantic-ui-react";
 import { connect } from "react-redux";
-import { updateEvent, createEvent } from '../eventActions';
-import cuid  from 'cuid';//collision resistant ids. Its included in the package.json
-
+import { updateEvent, createEvent } from "../eventActions";
+import cuid from "cuid"; //collision resistant ids. Its included in the package.json
 
 //this is a controlled form where every input field
 //has a local state and is monitored by react.
@@ -63,15 +62,15 @@ class EventForm extends Component {
   handleFormSubmit = (evt) => {
     evt.preventDefault();
     const { createEvent, updateEvent } = this.props;
-    if(this.state.id) {
+    if (this.state.id) {
       updateEvent(this.state);
       this.props.history.push(`/events/${this.state.id}`);
     } else {
       const newEvent = {
-        ...this.state, //copy our state 
-        id : cuid(),
-        hostPhotoURL : "/assets/user.png"
-      }
+        ...this.state, //copy our state
+        id: cuid(),
+        hostPhotoURL: "/assets/user.png"
+      };
       createEvent(newEvent);
       this.props.history.push(`/events`);
     }
@@ -81,7 +80,6 @@ class EventForm extends Component {
 
   render() {
     const { title, date, city, venue, hostedBy } = this.state;
-    const { id } = this.props.event;
     return (
       <Segment>
         <Form onSubmit={this.handleFormSubmit} autoComplete="off">
@@ -134,7 +132,6 @@ class EventForm extends Component {
           <Button positive type="submit">
             Submit
           </Button>
-         
 
           <Button type="button" onClick={this.props.history.goBack}>
             {/*the history.goBack sends user back to where they came, either from eventDetailed page or from EventDashboard */}
