@@ -3,11 +3,11 @@ import { connect } from 'react-redux';
 import { incrementCounter, decrementCounter } from './testActions'
 import { Button } from "semantic-ui-react";
 
-const mapState = (state) => ({//or mapStateToProps
+const mapState = (state) => ({//or mapStateToProps to get data from the state and into the component
     data: state.test.data //because we called that reducer test
 }) 
 
-const actions = { //or mapDispatchToProps
+const actions = { //or mapDispatchToProps to dispatch actions to the reducer and this affect the store
     //we'll pass these actions to the connect
     incrementCounter,
     decrementCounter

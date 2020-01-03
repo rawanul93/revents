@@ -1,12 +1,24 @@
 import React, { Component } from "react";
 import { Segment, Form, Button } from "semantic-ui-react";
+import { connect } from "react-redux";
+import { updateEvent, createEvent } from '../eventActions';
+import cuid  from 'cuid';//collision resistant ids. Its included in the package.json
+
 
 //this is a controlled form where every input field
 //has a local state and is monitored by react.
 //the onChange is used to detect changes in the input field
 //and to call the handleInputChange function to set the state accordingly.
-class EventForm extends Component {
-  state = {
+
+const actions = {
+  updateEvent,
+  createEvent
+};
+
+const mapState = (state, ownProps) => {
+  const eventId = ownProps.match.params.id;
+
+  let event = {
     title: "",
     date: "",
     city: "",
@@ -14,11 +26,22 @@ class EventForm extends Component {
     hostedBy: ""
   };
 
+  if (state.events.length > 0 && eventId) {
+    event = state.events.find((event) => event.id === eventId);
+  }
+  return {
+    event
+  };
+};
+
+class EventForm extends Component {
+  state = { ...this.props.event }; //getting event as props now because we're getting using mapState
+
   componentDidMount() {
-    if (this.props.selectedEvent !== null) {
+    if (this.props.event !== null) {
       //state is set here ONLY if there is a selected event.
       this.setState({
-        ...this.props.selectedEvent
+        ...this.props.event
         //the spread operator here takes each element
         //in this.props.selectedEvent and spreads it
         //into the matching elemets in our state
@@ -40,14 +63,25 @@ class EventForm extends Component {
   handleFormSubmit = (evt) => {
     evt.preventDefault();
     const { createEvent, updateEvent } = this.props;
-    this.state.id? updateEvent(this.state) : createEvent(this.state);
+    if(this.state.id) {
+      updateEvent(this.state);
+      this.props.history.push(`/events/${this.state.id}`);
+    } else {
+      const newEvent = {
+        ...this.state, //copy our state 
+        id : cuid(),
+        hostPhotoURL : "/assets/user.png"
+      }
+      createEvent(newEvent);
+      this.props.history.push(`/events`);
+    }
+
     //using this.state to update because this.state carries the updated info and not selectedEvent
   };
 
-
   render() {
-    const { cancelFormOpen, selectedEvent } = this.props;
     const { title, date, city, venue, hostedBy } = this.state;
+    const { id } = this.props.event;
     return (
       <Segment>
         <Form onSubmit={this.handleFormSubmit} autoComplete="off">
@@ -97,16 +131,13 @@ class EventForm extends Component {
               placeholder="Enter the name of person hosting"
             />
           </Form.Field>
-          {selectedEvent ? (
-            <Button positive type="submit">
-              Edit
-            </Button>
-          ) : (
-            <Button positive type="submit">
-              Submit
-            </Button>
-          )}
-          <Button type="button" onClick={cancelFormOpen}>
+          <Button positive type="submit">
+            Submit
+          </Button>
+         
+
+          <Button type="button" onClick={this.props.history.goBack}>
+            {/*the history.goBack sends user back to where they came, either from eventDetailed page or from EventDashboard */}
             Cancel
           </Button>
         </Form>
@@ -115,4 +146,4 @@ class EventForm extends Component {
   }
 }
 
-export default EventForm;
+export default connect(mapState, actions)(EventForm);
