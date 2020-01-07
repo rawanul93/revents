@@ -96,7 +96,6 @@ class EventForm extends Component {
       createEvent(newEvent);
       this.props.history.push(`/events/${newEvent.id}`);
     }
-
     //using this.state to update because this.state carries the updated info and not selectedEvent
   };
 

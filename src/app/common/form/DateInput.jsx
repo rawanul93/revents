@@ -19,7 +19,7 @@ const DateInput = ({
       selected={input.value ? new Date(input.value) : null} //This is for when we select a date.  If we dont then the value is null. We also need to turn the date we get from the input.value into Javascript Date first for DatePicker to work with. 
       onChange={input.onChange}
       onBlur={input.onBlur} //lets you know if the user has clicked in or out of the field.
-      onChangeRaw={(e) => e.preventDefault()}
+      onChangeRaw={(e) => e.preventDefault()} //its executed when a user types into the field. This makes sure you cant type into the field which we dont want since its a datepicker.
       />
     {touched && error && <Label basic color='red'>{error}</Label>}
     </Form.Field>
