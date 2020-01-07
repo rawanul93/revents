@@ -38,7 +38,7 @@ class App extends Component {
                   <Route path="/profile/:id" component={UserDetailedPage}></Route>
                   <Route path="/settings" component={SettingsDashboard}></Route>
                   <Route path={["/createEvent", "/manage/:id"]} component={EventForm}></Route>
-                  {/*with react router 5, we can now pass in arrays as the path, so both the above code will open up EventForm */}
+                  {/*with react router 5, we can now pass in arrays as the path, so both the above code will open up EventForm. But since they both have different key, t will be rendered accordingly */}
                   <Route path="/test" component={TestComponent}></Route>
                 </Switch>
 

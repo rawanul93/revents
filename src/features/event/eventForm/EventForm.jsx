@@ -1,8 +1,14 @@
 import React, { Component } from "react";
-import { Segment, Form, Button } from "semantic-ui-react";
+import { Segment, Form, Button, Grid, Header } from "semantic-ui-react";
+import { reduxForm, Field } from "redux-form";
 import { connect } from "react-redux";
 import { updateEvent, createEvent } from "../eventActions";
+import { composeValidators, combineValidators, isRequired, hasLengthGreaterThan } from 'revalidate';
 import cuid from "cuid"; //collision resistant ids. Its included in the package.json
+import TextInput from "../../../app/common/form/TextInput";
+import TextArea from "../../../app/common/form/TextArea";
+import SelectInput from "../../../app/common/form/SelectInput";
+import DateInput from "../../../app/common/form/DateInput";
 
 //this is a controlled form where every input field
 //has a local state and is monitored by react.
@@ -17,130 +23,161 @@ const actions = {
 const mapState = (state, ownProps) => {
   const eventId = ownProps.match.params.id;
 
-  let event = {
-    title: "",
-    date: "",
-    city: "",
-    venue: "",
-    hostedBy: ""
-  };
+  let event = {};
 
   if (state.events.length > 0 && eventId) {
     event = state.events.find((event) => event.id === eventId);
   }
   return {
-    event
+    initialValues: event //will get as props
+    //initialValues prop helps initialize the form data
   };
 };
 
+const validate = combineValidators({
+  title: isRequired({message: 'The event title is required'}),
+  category: isRequired({message: 'The category is required'}),
+  description: composeValidators(
+    isRequired({message:'Please enter a description'}),
+    hasLengthGreaterThan(4)({message: 'Description needs to be at least 5 characters'})
+  )(),
+  city: isRequired('city'),
+  venue: isRequired('venue'),
+  date: isRequired('date')
+
+})
+
+const category = [
+  { key: "drinks", text: "Drinks", value: "drinks" },
+  { key: "culture", text: "Culture", value: "culture" },
+  { key: "film", text: "Film", value: "film" },
+  { key: "food", text: "Food", value: "food" },
+  { key: "music", text: "Music", value: "music" },
+  { key: "travel", text: "Travel", value: "travel" }
+];
+
 class EventForm extends Component {
-  state = { ...this.props.event }; //getting event as props now because we're getting using mapState
+  //state = { ...this.props.event }; //getting event as props now because we're getting using mapState
+  // componentDidMount() {
+  //   if (this.props.event !== null) {
+  //     //state is set here ONLY if there is a selected event.
+  //     this.setState({
+  //       ...this.props.event
+  //       //the spread operator here takes each element
+  //       //in this.props.selectedEvent and spreads it
+  //       //into the matching elemets in our state
+  //       //i.e. title gets assigned title from selectedEvent now.
+  //     });
+  //   }
+  // }
 
-  componentDidMount() {
-    if (this.props.event !== null) {
-      //state is set here ONLY if there is a selected event.
-      this.setState({
-        ...this.props.event
-        //the spread operator here takes each element
-        //in this.props.selectedEvent and spreads it
-        //into the matching elemets in our state
-        //i.e. title gets assigned title from selectedEvent now.
-      });
-    }
-  }
+  // handleInputChange = ({ target: { name, value } }) => {
+  //   //destructuring event.target to get event.target.name and value
+  //   this.setState({
+  //     [name]: value
+  //     //the square brackets above allow us to access
+  //     //whichever name we want inside the state object
+  //     //the name we grap from the name of the input tags
+  //   });
+  // };
 
-  handleInputChange = ({ target: { name, value } }) => {
-    //destructuring event.target to get event.target.name and value
-    this.setState({
-      [name]: value
-      //the square brackets above allow us to access
-      //whichever name we want inside the state object
-      //the name we grap from the name of the input tags
-    });
-  };
-
-  handleFormSubmit = (evt) => {
-    evt.preventDefault();
-    const { createEvent, updateEvent } = this.props;
-    if (this.state.id) {
-      updateEvent(this.state);
-      this.props.history.push(`/events/${this.state.id}`);
+  onFormSubmit = (values) => {
+    //values will have all the things we enter in our form.
+    const { createEvent, updateEvent, initialValues } = this.props;
+    if (initialValues.id) {
+      updateEvent(values);
+      this.props.history.push(`/events/${initialValues.id}`); //go to event detailed page
     } else {
       const newEvent = {
-        ...this.state, //copy our state
+        ...values, //copy the data we got from the form
         id: cuid(),
         hostPhotoURL: "/assets/user.png"
       };
       createEvent(newEvent);
-      this.props.history.push(`/events`);
+      this.props.history.push(`/events/${newEvent.id}`);
     }
 
     //using this.state to update because this.state carries the updated info and not selectedEvent
   };
 
   render() {
-    const { title, date, city, venue, hostedBy } = this.state;
+    const { history, initialValues, invalid, submitting, pristine } = this.props;
     return (
-      <Segment>
-        <Form onSubmit={this.handleFormSubmit} autoComplete="off">
-          <Form.Field>
-            <label>Event Title</label>
-            <input
-              name="title"
-              onChange={this.handleInputChange}
-              value={title}
-              placeholder="Event Title"
-            />
-          </Form.Field>
-          <Form.Field>
-            <label>Event Date</label>
-            <input
-              name="date"
-              onChange={this.handleInputChange}
-              value={date}
-              type="date"
-              placeholder="Event Date"
-            />
-          </Form.Field>
-          <Form.Field>
-            <label>City</label>
-            <input
-              name="city"
-              onChange={this.handleInputChange}
-              value={city}
-              placeholder="City event is taking place"
-            />
-          </Form.Field>
-          <Form.Field>
-            <label>Venue</label>
-            <input
-              name="venue"
-              onChange={this.handleInputChange}
-              value={venue}
-              placeholder="Enter the Venue of the event"
-            />
-          </Form.Field>
-          <Form.Field>
-            <label>Hosted By</label>
-            <input
-              name="hostedBy"
-              onChange={this.handleInputChange}
-              value={hostedBy}
-              placeholder="Enter the name of person hosting"
-            />
-          </Form.Field>
-          <Button positive type="submit">
-            Submit
-          </Button>
+      <Grid>
+        <Grid.Column width={10}>
+          <Segment>
+            <Header sub color="teal" content="Event Details" />
+            <Form
+              onSubmit={this.props.handleSubmit(this.onFormSubmit)}
+              autoComplete="off"
+            >
+              <Field
+                name="title"
+                component={TextInput}
+                placeholder="Give your event a name"
+              />
+              <Field
+                name="category"
+                component={SelectInput}
+                placeholder="What is your event about?"
+                options={category}
+              />
+              <Field
+                name="description"
+                component={TextArea}
+                placeholder="Tell us about your event"
+                rows={3}
+              />
 
-          <Button type="button" onClick={this.props.history.goBack}>
-            {/*the history.goBack sends user back to where they came, either from eventDetailed page or from EventDashboard */}
-            Cancel
-          </Button>
-        </Form>
-      </Segment>
+              <Header sub color="teal" content="Event location details" />
+              <Field
+                name="city"
+                component={TextInput}
+                placeholder="Event City"
+              />
+              <Field
+                name="venue"
+                component={TextInput}
+                placeholder="Event Venue"
+              />
+              <Field
+                name="date"
+                component={DateInput}
+                placeholder="Event Date"
+                dateFormat='dd LLL yyyy h:mm a' //date, month in 3 letters, year 4 digit, hour:mins and am/pm. This is passed through to DatePicker with ...rest
+                showTimeSelect //user can select time with timepicker
+                timeFormat= 'HH:mm' //24hr timepicker
+              />
+
+              <Button disabled={invalid || submitting || pristine} positive type="submit">
+                Submit
+              </Button>
+
+              <Button
+                type="button"
+                onClick={
+                  initialValues.id
+                    ? () => history.push(`/events/${initialValues.id}`) 
+                    : () => history.push(`/events`)
+                    //we're using arrow functions because we only want this to get executed only when the click occurs, not when loading the form
+                    //if theres initialValues.id that means user accessed it from manage event and hence upon cancel will be routed back to the respective event page
+                    //if not then go back to the events list page
+                }
+              >
+                {/*the history.goBack sends user back to where they came, either from eventDetailed page or from EventDashboard */}
+                Cancel
+              </Button>
+            </Form>
+          </Segment>
+        </Grid.Column>
+      </Grid>
     );
   }
 }
 
-export default connect(mapState, actions)(EventForm);
+export default connect(
+  mapState,
+  actions
+)(reduxForm({ form: "eventForm", validate})(EventForm));
+//The ordering has to be done like that because we’re now saying reduxForm takes 2 parameters;
+//a config with validate and form  name eventForm and 2nd param the EventForm component itself. Then that whole thing is passed as a parameter to connect.
