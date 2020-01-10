@@ -1,14 +1,17 @@
+/*global google*/
 import React, { Component } from "react";
 import { Segment, Form, Button, Grid, Header } from "semantic-ui-react";
 import { reduxForm, Field } from "redux-form";
 import { connect } from "react-redux";
 import { updateEvent, createEvent } from "../eventActions";
 import { composeValidators, combineValidators, isRequired, hasLengthGreaterThan } from 'revalidate';
+import { geocodeByAddress, getLatLng } from 'react-places-autocomplete';
 import cuid from "cuid"; //collision resistant ids. Its included in the package.json
 import TextInput from "../../../app/common/form/TextInput";
 import TextArea from "../../../app/common/form/TextArea";
 import SelectInput from "../../../app/common/form/SelectInput";
 import DateInput from "../../../app/common/form/DateInput";
+import PlaceInput from "../../../app/common/form/PlaceInput";
 
 //this is a controlled form where every input field
 //has a local state and is monitored by react.
@@ -56,6 +59,8 @@ const category = [
   { key: "travel", text: "Travel", value: "travel" }
 ];
 
+
+
 class EventForm extends Component {
   //state = { ...this.props.event }; //getting event as props now because we're getting using mapState
   // componentDidMount() {
@@ -81,7 +86,39 @@ class EventForm extends Component {
   //   });
   // };
 
+  state = { //Local state just to store the city and venue lat and long in order to narrow down search results.
+    cityLatLng: {},
+    venueLatLng: {}
+  }
+
+  handleCitySelect = selectedCity => {
+    geocodeByAddress(selectedCity)
+    .then(results => getLatLng(results[0])) //since results returns an array and we just wanna specify to get the first element and not in array form.
+    .then(latlng => {
+      this.setState({
+        cityLatLng: latlng
+      })
+    })
+    .then(() => { //arrow function, so that it only runs when something is selected and not when just rendering.
+      this.props.change('city', selectedCity) //change is a redux method
+    })
+  }
+
+  handleVenueSelect = selectedVenue => {
+    geocodeByAddress(selectedVenue)
+    .then(results => getLatLng(results[0])) //since results returns an array and we just wanna specify to get the first element and not in array form.
+    .then(latlng => {
+      this.setState({
+        venueLatLng: latlng
+      })
+    })
+    .then(() => { //arrow function, so that it only runs when something is selected and not when just rendering.
+      this.props.change('venue', selectedVenue) //change is a redux method
+    })
+  }
+
   onFormSubmit = (values) => {
+    values.venueLatLng = this.state.venueLatLng; //copying the venueLatLng from state to the event itself.
     //values will have all the things we enter in our form.
     const { createEvent, updateEvent, initialValues } = this.props;
     if (initialValues.id) {
@@ -98,6 +135,7 @@ class EventForm extends Component {
     }
     //using this.state to update because this.state carries the updated info and not selectedEvent
   };
+
 
   render() {
     const { history, initialValues, invalid, submitting, pristine } = this.props;
@@ -131,12 +169,21 @@ class EventForm extends Component {
               <Header sub color="teal" content="Event location details" />
               <Field
                 name="city"
-                component={TextInput}
+                component={PlaceInput}
+                options={{types:['(cities)']}}
+                onSelect={this.handleCitySelect}
                 placeholder="Event City"
               />
               <Field
                 name="venue"
-                component={TextInput}
+                component={PlaceInput}
+                options={{
+                  location: new google.maps.LatLng(this.state.cityLatLng), //normally google.maps shows an error of saying its undefined. So we used /*global google*/ at the very top of this file before the imports to get rid of that warning.
+
+                  radius: 1000,
+                  types: ['establishment']
+                }}
+                onSelect={this.handleVenueSelect}
                 placeholder="Event Venue"
               />
               <Field

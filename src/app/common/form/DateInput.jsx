@@ -3,6 +3,7 @@ import { Form, Label } from "semantic-ui-react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css" //Getting the styling for the datepicker directly and having it in the component itself.
 
+
 const DateInput = ({
   input, //The only properties from the input we're passing onto DatePicker is the input.value and the onChange. If we wanted to pass everything, we'd just use the spread ooperator.
   width,
