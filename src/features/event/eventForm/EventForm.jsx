@@ -118,17 +118,22 @@ class EventForm extends Component {
   }
 
   onFormSubmit = (values) => {
-    values.venueLatLng = this.state.venueLatLng; //copying the venueLatLng from state to the event itself.
+    // values.venueLatLng = this.state.venueLatLng;
     //values will have all the things we enter in our form.
     const { createEvent, updateEvent, initialValues } = this.props;
     if (initialValues.id) {
+      if(initialValues.venueLatLng !== this.state.venueLatLng) {
+        values.venueLatLng = this.state.venueLatLng;
+      }
       updateEvent(values);
       this.props.history.push(`/events/${initialValues.id}`); //go to event detailed page
     } else {
+      values.venueLatLng = this.state.venueLatLng; //copying the venueLatLng from state to the event itself.
       const newEvent = {
         ...values, //copy the data we got from the form
         id: cuid(),
-        hostPhotoURL: "/assets/user.png"
+        hostPhotoURL: "/assets/user.png",
+        attendees:[]
       };
       createEvent(newEvent);
       this.props.history.push(`/events/${newEvent.id}`);

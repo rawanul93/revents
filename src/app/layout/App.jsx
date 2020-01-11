@@ -10,6 +10,7 @@ import UserDetailedPage from "../../features/user/userDetailed/UserDetailedPage"
 import SettingsDashboard from "../../features/user/settings/SettingsDashboard";
 import EventForm from "../../features/event/eventForm/EventForm";
 import TestComponent from "../../features/testarea/TestComponent";
+import ModalManager from "../../features/modals/ModalManager";
 
 //Fragment doesnt show up in our retunred HTML
 
@@ -19,6 +20,7 @@ class App extends Component {
       // So we have 2 main routes, the first route is looking for an exact path such as the '/'
       // The second route looks for a '/' plus anything,
       <Fragment>
+        <ModalManager/>
         <Route exact path='/' component={HomePage}></Route>
         {/*we use exact path because Router would route to Homepage even if we wanted to go
         to /events or  /anything because the top one holds most priority.

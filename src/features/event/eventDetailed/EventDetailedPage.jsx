@@ -33,7 +33,8 @@ const EventDetailedPage = ({ event }) => {
           <EventDetailedChat />
         </GridColumn>
         <GridColumn width={6}>
-          <EventDetailedSidebar attendees={event.attendees} />
+         <EventDetailedSidebar attendees={event.attendees} />
+          
         </GridColumn>
       </Grid>
     </Fragment>
