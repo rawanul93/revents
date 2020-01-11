@@ -3,10 +3,13 @@ import { Grid } from "semantic-ui-react";
 import EventList from "../eventList/EventList";
 import { connect } from "react-redux";
 import { createEvent, updateEvent, deleteEvent } from "../eventActions";
+import LoadingComponent from "../../../app/layout/LoadingComponent";
 
 const mapState = (state) => ({
-  events: state.events //getting the initial state from the store
+  events: state.events, //getting the initial state from the store
+  //its state.events because we called that reducer events in the rootReducer.
   //this is passed on from the store as props
+  loading: state.async.loading
 });
 
 const actions = {
@@ -68,7 +71,10 @@ class EventDashboard extends Component {
     this.props.deleteEvent(id);
   };
   render() {
-    const { events } = this.props; //now we're getting events as component props from the store.
+    const { events, loading } = this.props; //now we're getting events as component props from the store.
+    if (loading) {
+      return <LoadingComponent/>
+    } 
     return (
       <Grid>
         <Grid.Column width={10}>
