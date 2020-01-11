@@ -73,7 +73,7 @@ class EventDashboard extends Component {
   render() {
     const { events, loading } = this.props; //now we're getting events as component props from the store.
     if (loading) {
-      return <LoadingComponent/>
+      return <LoadingComponent />
     } 
     return (
       <Grid>

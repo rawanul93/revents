@@ -36,7 +36,9 @@ export const loadEvents = () => {
             const events = await fetchSampleData();
             dispatch({
                 type: FETCH_EVENTS,
-                payload: {events}
+                payload: {
+                    events
+                }
             })
             dispatch(asyncActionFinish());
         } catch (error) {
