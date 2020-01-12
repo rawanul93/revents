@@ -4,6 +4,7 @@ import EventList from "../eventList/EventList";
 import { connect } from "react-redux";
 import { createEvent, updateEvent, deleteEvent } from "../eventActions";
 import LoadingComponent from "../../../app/layout/LoadingComponent";
+import EventActivity from "../eventActivity/EventActivity";
 
 const mapState = (state) => ({
   events: state.events, //getting the initial state from the store
@@ -84,7 +85,7 @@ class EventDashboard extends Component {
           />
         </Grid.Column>
         <Grid.Column width={6}>
-          <h2>Activity Feed</h2>
+          <EventActivity />
           {/*If isOpen true, then whatever is to the right of && will be executed */
           /*For our EventForm component, the key is used in order 
             to determine how react should re-render the EventForm component.

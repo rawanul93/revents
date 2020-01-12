@@ -14,7 +14,7 @@ const LoginForm = ({ login, handleSubmit }) => {
   //we'll do handleSubmit(login) i.e. were passing in what we add in the login form to the action login.
   //login action therefore is receiving what we're adding in the form and thats what we defined as 'creds' in our authReducer
   return (
-    <Form error size="large" onSubmit={handleSubmit(login)} autocomplete="off">
+    <Form error size="large" onSubmit={handleSubmit(login)} autoComplete="off">
       <Segment>
         <Field
           name="email"
