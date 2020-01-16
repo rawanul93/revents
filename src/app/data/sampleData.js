@@ -2,7 +2,7 @@ const sampleData = [
     {
         id: '1',
         title: 'Trip to Empire State building',
-        date: '2018-03-T18:00:00',
+        date: '2018-03',
         category: 'culture',
         description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus sollicitudin ligula eu leo tincidunt, quis scelerisque magna dapibus. Sed eget ipsum vel arcu vehicula ullamcorper.',
         city: 'NY, USA',

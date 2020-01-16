@@ -22,8 +22,8 @@ class EventListItem extends Component {
         </Segment>
         <Segment>
           <span>
-            <Icon name='clock' /> {format(parseISO(event.date), 'EEEE do LLL')} at
-            {format(parseISO(event.date), 'h:mm a')}|
+            <Icon name='clock' /> {format(event.date.toDate(), 'EEEE do LLL')} at
+            {format(event.date.toDate(), 'h:mm a')}| {/* toDate() is a function provided by firebase and it converts timestamps to javascript dates*/}
             <Icon name="marker" /> {event.venue}
           </span>
         </Segment>
@@ -31,8 +31,8 @@ class EventListItem extends Component {
           {/*colours it different */}
           <List horizontal>
             {/*check of event has attenddes or not. Otherwise the code wont run */}
-            {event.attendees &&
-              event.attendees.map((attendee) => (
+            {event.attendees && //making sure if we have attendees or not
+              Object.values(event.attendees).map((attendee) => ( //object.values to conver an object to its subsequent array.
                 <EventListAttendee key={attendee.id} attendee={attendee} />
               ))}
           </List>
