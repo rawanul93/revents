@@ -32,8 +32,8 @@ class EventListItem extends Component {
           <List horizontal>
             {/*check of event has attenddes or not. Otherwise the code wont run */}
             {event.attendees && //making sure if we have attendees or not
-              Object.values(event.attendees).map((attendee) => ( //object.values to conver an object to its subsequent array.
-                <EventListAttendee key={attendee.id} attendee={attendee} />
+              Object.values(event.attendees).map((attendee, index) => ( //object.values to conver an object to its subsequent array.
+                <EventListAttendee key={index} attendee={attendee} /> //we're passing in the index of the array to use as the key since our attendees dont have keys anymore
               ))}
           </List>
         </Segment>
