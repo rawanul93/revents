@@ -19,7 +19,7 @@ const LoginForm = ({ login, handleSubmit, error, socialLogin }) => {
   //login action therefore is receiving what we're adding in the form and thats what we defined as 'creds' in our authReducer.
   //we also get error as a prop from redux forms which contains the error we throw using SubmissionError() method in login action in authActions.
   return (
-    <Form error size="large" onSubmit={handleSubmit(login)} autoComplete="off">
+    <Form error size="large" onSubmit={handleSubmit(login)}>
       <Segment>
         <Field
           name="email"

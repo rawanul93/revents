@@ -8,24 +8,33 @@ import AboutPage from "./AboutPage";
 import PhotosPage from "./PhotosPage";
 import AccountPage from "./AccountPage";
 import { updatePassword } from "../../auth/authActions";
+import { updateProfile } from "../userActions";
 
 const actions = {
-  updatePassword
+  updatePassword,
+  updateProfile
 }
 
 const mapState = (state) => ({
-  providerId: state.firebase.auth.providerData[0].providerId
+  providerId: state.firebase.auth.providerData[0].providerId,
+  user: state.firebase.profile //this is where all the user information is gonna be stored, which is the user Firestore document.
 })
 
 
-const SettingsDashboard = ({updatePassword, providerId}) => {
+const SettingsDashboard = ({updatePassword, providerId, user, updateProfile}) => {
   return (
     <Grid>
       <GridColumn width={12}>
         <Switch> {/* this switch renders a route exclusively, i.e. we end up not renderig too many routes*/}
           <Redirect exact from="/settings" to="settings/basic" />{/*by default if route is settings, it goes to settings/basic */}
-          <Route path="/settings/basic" component={BasicPage} />
-          <Route path="/settings/about" component={AboutPage} />
+          <Route 
+            path="/settings/basic" 
+            render={() => <BasicPage initialValues={user} updateProfile={updateProfile}/>} //initialValues sets the initial value for the appropriate form fields accordingly. 
+          /> 
+          <Route 
+            path="/settings/about"  
+            render={() => <AboutPage initialValues={user} updateProfile={updateProfile} />}
+          />
           <Route path="/settings/photos" component={PhotosPage} />
           <Route 
             path="/settings/account" 
