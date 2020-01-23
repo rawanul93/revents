@@ -13,7 +13,8 @@ import { reactReduxFirebase, getFirebase } from "react-redux-firebase";
 const rrfConfig = { //giving react redux firestore some configuration.  
     userProfile: 'users', // so when we create a new user inside firebase, then the user will have a userProfile and we want the collection ('table') to be called users.
     attachAuthIsReady: true, //this allows us to wait until the authentication is ready before we go and render something in our app.
-    useFirestoreForProfile: true // this will tell our configuration that when we do have a user profile for a user who has just registered, then we'll store that in firestore and not firebase ( which is the default location). 
+    useFirestoreForProfile: true,// this will tell our configuration that when we do have a user profile for a user who has just registered, then we'll store that in firestore and not firebase ( which is the default location). 
+    updateProfileOnLogin: false //this makes sure that when we login with Social, we're not updating that user's document with ALL the information that social login provides. Because social logins comes with a lot of other information about the user that we dont really need and does not comply with our standard structure of data for other users.
 }
 
 export const configureStore = () => {

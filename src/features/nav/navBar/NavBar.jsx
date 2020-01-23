@@ -5,15 +5,17 @@ import { NavLink, Link, withRouter } from "react-router-dom";
 import SignedOutMenu from "../menus/SignedOutMenu";
 import SignedInMenu from "../menus/SignedInMenu";
 import { openModal } from "../../modals/modalActions";
-import { logout } from "../../auth/authActions";
+import { withFirebase } from 'react-redux-firebase' //we use this when we actually dont need to connect to firebase/firestore but we want to retrieve or listen to new data
+
 
 const actions = {
-  openModal, //will use as state
-  logout
+  openModal //will use as state
 };
 
 const mapState = (state) => ({
-  auth: state.auth
+ // auth: state.auth
+  auth: state.firebase.auth, //firebase has its own auth, so we'll be using that
+  profile: state.firebase.profile
 });
 
 class NavBar extends Component {
@@ -26,13 +28,13 @@ class NavBar extends Component {
   };
 
   handleSignOut = () => {
-    this.props.logout();
+    this.props.firebase.logout(); //this is why we exported this component using withFirebase. So that we can use these methods.
     this.props.history.push("/");
   };
 
   render() {
-    const { auth } = this.props;
-    const authenticated = auth.authenticated;
+    const { auth, profile } = this.props;
+    const authenticated = auth.isLoaded && !auth.isEmpty; //if auth.isLoaded true, then assign opposite of auth.Empty as authenticated which is true. Otherwise authenticated will be false
     return (
       <Menu inverted fixed="top">
         <Container>
@@ -60,7 +62,7 @@ class NavBar extends Component {
           {authenticated ? (
             <SignedInMenu
               signOut={this.handleSignOut}
-              currentUser={auth.currentUser}
+              profile={profile}
             />
           ) : (
             <SignedOutMenu
@@ -74,4 +76,4 @@ class NavBar extends Component {
   }
 }
 
-export default withRouter(connect(mapState, actions)(NavBar));
+export default withRouter(withFirebase(connect(mapState, actions)(NavBar)));
