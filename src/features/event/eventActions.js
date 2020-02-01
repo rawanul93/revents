@@ -44,21 +44,21 @@ export const deleteEvent = (eventId) => {
     }
 }
 
-export const loadEvents = () => {
-    return async dispatch => {
-        try {
-            dispatch(asyncActionStart())
-            const events = await fetchSampleData();
-            dispatch({
-                type: FETCH_EVENTS,
-                payload: {
-                    events
-                }
-            })
-            dispatch(asyncActionFinish());
-        } catch (error) {
-            console.log(error);
-            dispatch(asyncActionError());
-        }
-    }
-}
+// export const loadEvents = () => {
+//     return async dispatch => {
+//         try {
+//             dispatch(asyncActionStart())
+//             const events = await fetchSampleData();
+//             dispatch({
+//                 type: FETCH_EVENTS,
+//                 payload: {
+//                     events
+//                 }
+//             })
+//             dispatch(asyncActionFinish());
+//         } catch (error) {
+//             console.log(error);
+//             dispatch(asyncActionError());
+//         }
+//     }
+// }

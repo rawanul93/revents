@@ -5,7 +5,7 @@ import { connect } from 'react-redux';
 import { Route, Redirect, Switch } from "react-router-dom";
 import BasicPage from "./BasicPage";
 import AboutPage from "./AboutPage";
-import PhotosPage from "./PhotosPage";
+import PhotosPage from "./Photos/PhotosPage";
 import AccountPage from "./AccountPage";
 import { updatePassword } from "../../auth/authActions";
 import { updateProfile } from "../userActions";

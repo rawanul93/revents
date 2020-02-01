@@ -5,10 +5,10 @@ import { connect } from "react-redux";
 import { createEvent, updateEvent, deleteEvent } from "../eventActions";
 import LoadingComponent from "../../../app/layout/LoadingComponent";
 import EventActivity from "../eventActivity/EventActivity";
-import { firestoreConnect } from "react-redux-firebase";
+import { firestoreConnect } from "react-redux-firebase"; //we use this to load our events from the firestore into our firestore reducer. From which we extract the events as props. 
 
 const mapState = (state) => ({
-  events: state.firestore.ordered.events, //getting the initial state from the store
+  events: state.firestore.ordered.events, //getting the initial state from the store. We get to do this because we're using firestoreConnect for this component.
   //its state.events because we called that reducer events in the rootReducer.
   //this is passed on from the store as props
   loading: state.async.loading
