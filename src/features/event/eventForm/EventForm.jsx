@@ -3,15 +3,15 @@ import React, { Component } from "react";
 import { Segment, Form, Button, Grid, Header } from "semantic-ui-react";
 import { reduxForm, Field } from "redux-form";
 import { connect } from "react-redux";
-import { updateEvent, createEvent } from "../eventActions";
+import { updateEvent, createEvent, cancelToggle } from "../eventActions";
 import { composeValidators, combineValidators, isRequired, hasLengthGreaterThan } from 'revalidate';
 import { geocodeByAddress, getLatLng } from 'react-places-autocomplete';
-import cuid from "cuid"; //collision resistant ids. Its included in the package.json
 import TextInput from "../../../app/common/form/TextInput";
 import TextArea from "../../../app/common/form/TextArea";
 import SelectInput from "../../../app/common/form/SelectInput";
 import DateInput from "../../../app/common/form/DateInput";
 import PlaceInput from "../../../app/common/form/PlaceInput";
+import { withFirestore } from "react-redux-firebase";
 
 //this is a controlled form where every input field
 //has a local state and is monitored by react.
@@ -20,7 +20,8 @@ import PlaceInput from "../../../app/common/form/PlaceInput";
 
 const actions = {
   updateEvent,
-  createEvent
+  createEvent,
+  cancelToggle
 };
 
 const mapState = (state, ownProps) => {
@@ -28,12 +29,13 @@ const mapState = (state, ownProps) => {
 
   let event = {};
 
-  if (state.events.length > 0 && eventId) {
-    event = state.events.find((event) => event.id === eventId);
+  if (state.firestore.ordered.events && state.firestore.ordered.events.length > 0) {
+    event = state.firestore.ordered.events.find(event => eventId === event.id);
   }
   return {
-    initialValues: event //will get as props
-    //initialValues prop helps initialize the form data
+    initialValues: event, //will get as props. initialValues prop helps initialize the form data
+    event: event
+    
   };
 };
 
@@ -91,6 +93,33 @@ class EventForm extends Component {
     venueLatLng: {}
   }
 
+  async componentDidMount() {
+    const { firestore, match } = this.props;
+    await firestore.setListener(`events/${match.params.id}`); //automatically sets our listeners for us. We're doing it manually here.
+    
+  }
+
+  async componentWillUnmount(){
+    const { firestore, match } = this.props;
+    await firestore.unsetListener(`events/${match.params.id}`);
+  }
+    
+    
+    //  let event = await firestore.get(`events/${match.params.id}`); //this event above will give us a DocumentSnapshot of the event doc. Also since we're using withFirestore in here, this particular event will automatically be stored in the firestore reducer under the ordered data.
+    // //since its all wrapped by the router, we stll have access to the match props
+    // if(!event.exists && location.pathname !== '/createEvent') { //exists is a property that is true if such a document exists in firestore and false otherwise. So even if users typein random things in the browser and we try to get a document from the firestore based on an id that doesnt exist, we would still get a snapshot doc but of a doc that doesnt exist. W
+    //   history.push('/events'); //so  if the doc doesnt exist we'll send users back to the list
+    //   toastr.error('Sorry', 'Event not found')
+    // } else if (event.exists) {
+    //   this.setState({//if the event does exist. We definitely want to populate our local venueLatLng state because otherwise when we update an event, if the local state venueLatLng is empty, that is what is assigned in the updated event.
+    //     venueLatLng: event.data().venueLatLng
+    //   })
+    // }
+      
+    
+  
+  
+
   handleCitySelect = selectedCity => {
     geocodeByAddress(selectedCity)
     .then(results => getLatLng(results[0])) //since results returns an array and we just wanna specify to get the first element and not in array form.
@@ -117,33 +146,33 @@ class EventForm extends Component {
     })
   }
 
-  onFormSubmit = (values) => {
-    // values.venueLatLng = this.state.venueLatLng;
-    //values will have all the things we enter in our form.
+  onFormSubmit = async (values) => { //values will have all the things we enter in our form.
+    
+    values.venueLatLng = this.state.venueLatLng;
+
     const { createEvent, updateEvent, initialValues } = this.props;
-    if (initialValues.id) {
-      if(initialValues.venueLatLng !== this.state.venueLatLng) {
-        values.venueLatLng = this.state.venueLatLng;
+    try {
+      if(initialValues.id) {
+        if(Object.keys(values.venueLatLng).length === 0) {
+          values.venueLatLng = this.props.event.venueLatLng;
+        }
+        updateEvent(values); //check that we added an else statement to our componentDidMount so as to populate the local state venueLatLng with the appropriate values. Because otherwise when the component mounts, it resets back to the initial state which we assigned as empty. 
+        this.props.history.push(`/events/${initialValues.id}`); //go to event detailed page
+      } else {
+        //values.venueLatLng = this.state.venueLatLng; //copying the venueLatLng from state to the event itself.
+        let createdEvent = await createEvent(values);
+        this.props.history.push(`/events/${createdEvent.id}`);
+
       }
-      updateEvent(values);
-      this.props.history.push(`/events/${initialValues.id}`); //go to event detailed page
-    } else {
-      values.venueLatLng = this.state.venueLatLng; //copying the venueLatLng from state to the event itself.
-      const newEvent = {
-        ...values, //copy the data we got from the form
-        id: cuid(),
-        hostPhotoURL: "/assets/user.png",
-        attendees:[]
-      };
-      createEvent(newEvent);
-      this.props.history.push(`/events/${newEvent.id}`);
+    } catch (error) {
+      console.log(error);
     }
-    //using this.state to update because this.state carries the updated info and not selectedEvent
-  };
+
+  }
 
 
   render() {
-    const { history, initialValues, invalid, submitting, pristine } = this.props;
+    const { history, initialValues, invalid, submitting, pristine, event, cancelToggle, location } = this.props;
     return (
       <Grid>
         <Grid.Column width={10}>
@@ -203,11 +232,11 @@ class EventForm extends Component {
               <Button disabled={invalid || submitting || pristine} positive type="submit">
                 Submit
               </Button>
-
+               
               <Button
                 type="button"
                 onClick={
-                  initialValues.id
+                  initialValues && initialValues.id
                     ? () => history.push(`/events/${initialValues.id}`) 
                     : () => history.push(`/events`)
                     //we're using arrow functions because we only want this to get executed only when the click occurs, not when loading the form
@@ -218,6 +247,17 @@ class EventForm extends Component {
                 {/*the history.goBack sends user back to where they came, either from eventDetailed page or from EventDashboard */}
                 Cancel
               </Button>
+              {   
+                  location.pathname !== '/createEvent' && 
+                  <Button 
+                    type='button' 
+                    color={event.cancelled ? 'green' : 'red'} 
+                    floated='right'
+                    content={event.cancelled ? 'Reactivate event' : 'Cancel event'}
+                    onClick={() => cancelToggle(!event.cancelled, event.id)}
+                 />
+              }
+              
             </Form>
           </Segment>
         </Grid.Column>
@@ -226,9 +266,10 @@ class EventForm extends Component {
   }
 }
 
-export default connect(
+export default withFirestore(connect(
   mapState,
   actions
-)(reduxForm({ form: "eventForm", validate})(EventForm));
+)(reduxForm({ form: "eventForm", validate, enableReinitialize: true})(EventForm)));
 //The ordering has to be done like that because we’re now saying reduxForm takes 2 parameters;
 //a config with validate and form  name eventForm and 2nd param the EventForm component itself. Then that whole thing is passed as a parameter to connect.
+

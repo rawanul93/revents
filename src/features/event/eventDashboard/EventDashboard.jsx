@@ -2,22 +2,20 @@ import React, { Component } from "react";
 import { Grid } from "semantic-ui-react";
 import EventList from "../eventList/EventList";
 import { connect } from "react-redux";
-import { createEvent, updateEvent, deleteEvent } from "../eventActions";
+import { createEvent, updateEvent } from "../eventActions";
 import LoadingComponent from "../../../app/layout/LoadingComponent";
 import EventActivity from "../eventActivity/EventActivity";
-import { firestoreConnect } from "react-redux-firebase"; //we use this to load our events from the firestore into our firestore reducer. From which we extract the events as props. 
+import { firestoreConnect, isLoaded } from "react-redux-firebase"; //we use this to load our events from the firestore into our firestore reducer. From which we extract the events as props. 
 
 const mapState = (state) => ({
   events: state.firestore.ordered.events, //getting the initial state from the store. We get to do this because we're using firestoreConnect for this component.
-  //its state.events because we called that reducer events in the rootReducer.
+  //its state.firestore because we called that reducer events in the rootReducer.
   //this is passed on from the store as props
-  loading: state.async.loading
 });
 
 const actions = {
   createEvent,
-  updateEvent,
-  deleteEvent
+  updateEvent
 }; //these will be available through props in our component below
 
 class EventDashboard extends Component {
@@ -67,12 +65,10 @@ class EventDashboard extends Component {
   //   //this creates a new array that we are gonna assign to our events in state
   //   }))
 
-  handleDeleteEvent = (id) => {
-    this.props.deleteEvent(id);
-  };
+ 
   render() {
-    const { events, loading } = this.props; //now we're getting events as component props from the store.
-    if (loading) {
+    const { events } = this.props; //now we're getting events as component props from the store.
+    if (!isLoaded(events)) { //isLoaded is a firestore functionality that we import from react redux firebase
       return <LoadingComponent />;
     }
     return (

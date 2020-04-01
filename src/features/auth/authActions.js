@@ -26,7 +26,7 @@ export const registerUser = user => //user object with all the information that 
         const firebase = getFirebase();
         const firestore = getFirestore();
         try {
-            let createdUser = await firebase.auth().createUserWithEmailAndPassword(user.email, user.password);
+            let createdUser = await firebase.auth().createUserWithEmailAndPassword(user.email, user.password); //created in our firebase auth
             //console.log(createdUser);
             await createdUser.user.updateProfile({ //our newly createdUser will have a user object which has a method updateProfile. This user object is what is inside our auth, its not the one in our firebase
                 displayName: user.displayName //setting the displayName in profile (not auth) in firebase.

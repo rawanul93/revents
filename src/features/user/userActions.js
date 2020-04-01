@@ -99,7 +99,54 @@ export const setMainPhoto = (photo) =>
             });
         } catch (error) {
             console.log(error);
-            throw new Error('Porblem setting main photo');
+            throw new Error('Problem setting main photo');
+        }
+    }
+
+export const goingToEvent = (event) => 
+    async (dispatch, getState, {getFirebase, getFirestore}) => {
+        const firebase = getFirebase();
+        const firestore = getFirestore();
+        const user = firebase.auth().currentUser;
+        const profile = getState().firebase.profile; //getState gets us the firebase state from the reducer. We are getting the profile from firebase.profile and not auth because we dont keep auth updated.
+        const attendee = {
+            going: true,
+            joinDate: firestore.FieldValue.serverTimestamp(),
+            photoURL: profile.photoURL || '/assets/user/png',
+            displayName: profile.displayName,
+            host: false
+        }
+        try {
+            await firestore.update(`/events/${event.id}`, {
+                [`attendees.${user.uid}`]: attendee //add attendee to the event doc under attendees. We'll give this attendee a key of user Id that joined, using object notaion. Firestore will automatically add an attendee with this id and update it with our attendee object which we setup above.
+            })
+            await firestore.set(`event_attendee/${event.id}_${user.uid}` , { //this is how we want to set up this document in our firestore.
+                eventId: event.id,
+                userUid: user.uid,
+                eventDate: event.date,
+                host: false
+            })
+            toastr.success('Success', 'You have signed up to the event')
+        } catch (error) {
+            console.log(error)
+            toastr.error('Oops', 'Problem signing up to the event')
+        }
+    }
+
+export const cancelGoingToEvent = (event) => 
+    async (dispatch, getState, {getFirebase, getFirestore}) => {
+        const firebase = getFirebase();
+        const firestore = getFirestore();
+        const user = firebase.auth().currentUser;
+        try {
+            await firestore.update(`events/${event.id}`, { //cant directily access the attendees, so need to use object bracket notation, kind of like an array.
+                [`attendees.${user.uid}`] : firestore.FieldValue.delete() //remove a specific field in a document, in this case its deleting the attendee with the key of of this user who cancels going to the event.
+            })
+            await firestore.delete(`event_attendees/${event.id}_${user.uid}`); //using the delete() method directly here cause we're deleting the entire document here and not just a specific field or something
+            toastr('Success', 'You have removed yourself from the event')
+        } catch (error) {
+            console.log(error);
+            toastr.error('Oops', 'Something went wrong');
         }
     }
 
