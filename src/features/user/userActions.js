@@ -1,6 +1,8 @@
 import { toastr } from "react-redux-toastr";
 import { asyncActionStart, asyncActionFinish, asyncActionError } from "../async/asyncActions";
 import cuid from 'cuid';
+import firebase from '../../app/config/firebase';
+import { FETCH_EVENTS } from "../event/eventConstants";
 
 export const updateProfile = (user) => 
 async (dispatch, getState, { getFirebase }) => {
@@ -150,3 +152,54 @@ export const cancelGoingToEvent = (event) =>
         }
     }
 
+export const getUserEvents = (userUid, activeTab) => 
+    async (dispatch, getState) => {
+        dispatch(asyncActionStart());
+        const firestore = firebase.firestore();
+        const today = new Date(Date.now());
+        let eventsRef = firestore.collection('event_attendee'); //this collection doesnt carry the full information of the event itself. We made it for lookup purposes only.
+        let query;
+        switch (activeTab) {
+            case 1: //past events
+                query = eventsRef
+                    .where('userUid', '==', userUid)
+                    .where('eventDate', '<=', today)
+                    .orderBy('eventDate', 'desc');
+                break;
+            case 2: //future events
+                query = eventsRef
+                    .where('userUid', '==', userUid)
+                    .where('eventDate', '>=', today)
+                    .orderBy('eventDate', 'desc');
+                    break;
+            case 3: //hosted events
+                query = eventsRef
+                    .where('userUid', '==', userUid)
+                    .where('host', '==', true)
+                    .orderBy('eventDate', 'desc');
+                    break;
+            default:
+                    query = eventsRef
+                    .where('userUid', '==', userUid)
+                    .orderBy('eventDate', 'desc');
+                    break;
+        }
+
+        try {
+            let querySnap = await query.get(); //.get() executes the query and gives us a query snapshot.
+            let events =[];
+
+            for(let i = 0; i < querySnap.docs.length; i++) {
+                let evt = await firestore.collection('events').doc(querySnap.docs[i].data().eventId).get(); //go to the events collection in firestore, and get the document pertaining to the event with the eventId that we find from each doc in the querySnap which has the events that this user is attending. Doing querySnap.doc.data converts the fields in the document into an object and from there we're doing .eventId to get the eventId and use it to get the actual event with this particular id from the events collection.
+                events.push({...evt.data(), id: evt.id});
+            }
+            dispatch({type: FETCH_EVENTS, payload: {events}})
+
+            dispatch(asyncActionFinish());
+            return querySnap;
+
+        } catch (error) {
+            console.log(error)
+            dispatch(asyncActionError());
+        }
+    }

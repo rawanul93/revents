@@ -10,8 +10,11 @@ import UserDetailedEvents from "./UserDetailedEvents";
 import UserDetailedSidebar from "./UserDetailedSidebar";
 import { userDetailedQuery } from "../userQueries";
 import LoadingComponent from "../../../app/layout/LoadingComponent";
+import { getUserEvents } from '../userActions';
 
-
+const actions = {
+  getUserEvents
+}
 
 const mapState = (state, ownProps) => { //ownprops to get the params we get in our url. Ownprops gets us access to the props this component gets and this case it gets the router props since the entire app is wrapped by withRouter
   let userUid = null;
@@ -29,16 +32,28 @@ const mapState = (state, ownProps) => { //ownprops to get the params we get in o
   return {
       profile,
       userUid,
+      events: state.events,
+      eventsLoading: state.async.loading,
       auth: state.firebase.auth,
       photos: state.firestore.ordered.photos,
       requesting: state.firestore.status.requesting //since we have a listener set up on this page, firestore.status has a prop called requesting which is set to true when its still fetching data from the firestore, which in this case is the photos and since that takes a little bit more time it gives us some weirdness when we switch from one user profile to another. So we'll hook into this prop to check if the images are fetched or if its still requested and then display a loading component accordingly
-    }
+  }
     
 };
 
 class UserDetailedPage extends Component {
+
+  async componentDidMount(){
+    let events = await this.props.getUserEvents(this.props.userUid);
+  }
+
+  changeTab = (e, data) => {
+    this.props.getUserEvents(this.props.userUid, data.activeIndex)
+  }
+
+
   render() {
-    const { profile, photos, auth, match, requesting } = this.props;
+    const { profile, photos, auth, match, requesting, events, eventsLoading } = this.props;
     const isCurrentUser = auth.uid === match.params.id;
 
     const loading = Object.values(requesting).some(a => a === true); //Object.values converts an object into an array. We need this because requesting is an object with the user/Uid: true or false. So we convert it and use an array method some which is a method that checks if any of the elements in the array passes a test which is a function we provide. In this case checking if there is a true in there which indicates that the pictures are still being requested.
@@ -53,14 +68,14 @@ class UserDetailedPage extends Component {
         <UserDetailedDescription profile={profile} />
         <UserDetailedSidebar isCurrentUser={isCurrentUser} />
         {photos && photos.length > 0 && 
-        <UserDetailedPhotos photos={photos} />}
-        <UserDetailedEvents />
+          <UserDetailedPhotos photos={photos} />}
+        <UserDetailedEvents events={events} eventsLoading={eventsLoading} changeTab={this.changeTab}/>
       </Grid>
     );
   }
 }
 
 export default compose(
-  connect(mapState, null),
+  connect(mapState, actions),
   firestoreConnect((auth, userUid) => userDetailedQuery(auth, userUid))
 )(UserDetailedPage);
