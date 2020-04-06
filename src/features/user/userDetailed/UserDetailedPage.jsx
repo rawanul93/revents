@@ -41,7 +41,7 @@ class UserDetailedPage extends Component {
     const { profile, photos, auth, match, requesting } = this.props;
     const isCurrentUser = auth.uid === match.params.id;
 
-    const loading = Object.values(requesting).some(a => a === true)//Object.values converts an object into an array. We need this because requesting is an object with the user/Uid: true or false. So we convert it and use an array method some which is a method that checks if any of the elements in the array passes a test which is a function we provide. In this case checking if there is a true in there which indicates that the pictures are still being requested.
+    const loading = Object.values(requesting).some(a => a === true); //Object.values converts an object into an array. We need this because requesting is an object with the user/Uid: true or false. So we convert it and use an array method some which is a method that checks if any of the elements in the array passes a test which is a function we provide. In this case checking if there is a true in there which indicates that the pictures are still being requested.
     if(loading) {
       return ( //if this condition is met, the loading component is returned and the rest of the code is not executed. Render() will execute only one return.
         <LoadingComponent />
