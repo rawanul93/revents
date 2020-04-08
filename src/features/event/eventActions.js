@@ -12,7 +12,7 @@ export const createEvent = (event) => {
         const firestore = getFirestore();
         const firebase = getFirebase();
         const user = firebase.auth().currentUser;
-        const photoURL = getState().firebase.profile.photoURL; // we can use getState to get the photo because firebase automatically loads up the profile when a user logs in.
+        const photoURL = getState().firebase.profile.photoURL; // we can use getState to get the photo because firebase automatically loads up the profile when a user logs in because in our auth actions we set up up that when a user signs in, the firebase auth is immediately updated with t
         const newEvent = createNewEvent(user, photoURL, event) // this is in the helper.js file. We kept it there so as to avoid the clutter.
         try {
             let createdEvent = await firestore.add('events', newEvent); // adding newEvent to the event collection. The createdEvent is the document snapShot. So now we can use the createdEvent id. We use .add when we add a document where we want firestore to give a unique id when creating it. I.e. we are not exclusively setting a specific id or referring to one.
@@ -113,6 +113,29 @@ async (dispatch, getState) => {
         dispatch(asyncActionError());
     }
 }
+
+export const addEventComment = (eventId, values, parentId) => 
+    async (dispatch, getState, {getFirebase}) => {
+        const firebase = getFirebase();
+        const profile = getState().firebase.profile;
+        const user = firebase.auth().currentUser
+        let newComment = {
+            parentId: parentId,
+            displayName: profile.displayName,
+            photoURL: profile.photoURL || '/assets/user.png', //if the user doesnt have a display photo.
+            uid: user.uid,
+            text: values.comment,
+            date: Date.now()
+                }
+        try {
+            await firebase.push(`event_chat/${eventId}`, newComment)  //in firebase we push items with their location.
+        } catch (error) {
+            console.log(error)
+            toastr('Oops', 'Problem adding comment');
+        }
+    }
+
+
 // export const loadEvents = () => {
 //     return async dispatch => {
 //         try {

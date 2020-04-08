@@ -27,3 +27,14 @@ export const createNewEvent = (user, photoURL, event) => {
         }
     }
 }
+
+export const createDataTree = dataset => { //this is from stack overflow. It takes in a dataset which will be a flat array, in this case its the event_chat array with all the comments including the replies for a specific event.
+    let hashTable = Object.create(null); //starts off with a null object
+    dataset.forEach(a => hashTable[a.id] = {...a, childNodes: []}); //also adding an array called childnodes
+    let dataTree = [];
+    dataset.forEach(a => {
+        if (a.parentId) hashTable[a.parentId].childNodes.push(hashTable[a.id]); //if parentId != 0 , i.e. its a reply and not a comment, then in the hashtable where the comment id equals the parentId, we fill in the childnode of the original comment with this comment i.e. the reply
+        else dataTree.push(hashTable[a.id]) //when parentId is 0, i.e. its the original comment and not a reply, we push the hashtable as is. And not as a childnode to something.`
+    });
+    return dataTree
+};
