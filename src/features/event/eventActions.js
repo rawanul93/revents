@@ -126,7 +126,7 @@ export const addEventComment = (eventId, values, parentId) =>
             uid: user.uid,
             text: values.comment,
             date: Date.now()
-                }
+        }
         try {
             await firebase.push(`event_chat/${eventId}`, newComment)  //in firebase we push items with their location.
         } catch (error) {

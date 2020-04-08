@@ -74,7 +74,7 @@ class EventDetailedPage extends Component  {
             <EventDetailedChat addEventComment={addEventComment} eventId={event.id} eventChat={chatTree}/>
           </GridColumn>
           <GridColumn width={6}>
-           <EventDetailedSidebar attendees={attendees} /> 
+           <EventDetailedSidebar attendees={attendees} eventId={event.id}/> 
            
             
           </GridColumn>

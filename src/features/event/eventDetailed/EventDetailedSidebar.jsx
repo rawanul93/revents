@@ -2,7 +2,7 @@ import React, { Fragment } from "react";
 import { Segment, Item, Label } from "semantic-ui-react";
 import { Link } from "react-router-dom";
 
-const EventDetailedSidebar = ({ attendees }) => {
+const EventDetailedSidebar = ({ attendees, eventId }) => {
  
   return (
     <Fragment>
