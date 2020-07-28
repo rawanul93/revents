@@ -26,16 +26,16 @@ export const registerUser = user => //user object with all the information that 
         const firebase = getFirebase();
         const firestore = getFirestore();
         try {
-            let createdUser = await firebase.auth().createUserWithEmailAndPassword(user.email, user.password); //created in our firebase auth
+            let createdUser = await firebase.auth().createUserWithEmailAndPassword(user.email, user.password); //created in our firebase auth. The email and the password will be saved at the authentication section.
             //console.log(createdUser);
-            await createdUser.user.updateProfile({ //our newly createdUser will have a user object which has a method updateProfile. This user object is what is inside our auth, its not the one in our firebase
+            await createdUser.user.updateProfile({ //our newly createdUser will have a user object which has a method updateProfile. The profile we're updating is stored in firestore but we get access to it via firebase. We're storing in firestore because we made that config in our store so that profile data is stored in firestore. This user object is what is inside our auth, its not the one in our firebase
                 displayName: user.displayName //setting the displayName in profile (not auth) in firebase.
             })
-            let newUser = { //createdUser was created to be stored in our firebase auth. But we now want to create an actual new user in our firestore.
+            let newUser = { //createdUser was created to be stored in our firebase auth with the email and password. But we now want to create an actual new user in our firestore database.
                 displayName: user.displayName,
                 createdAt: firestore.FieldValue.serverTimestamp() //we're gonna store the time at which the user was created. We'll be using the server timestamp since its more accurate than our own system's time.
             }
-            await firestore.set(`users/${createdUser.user.uid}`, {...newUser})
+            await firestore.set(`users/${createdUser.user.uid}`, {...newUser}) //spreading everything from the user.
             //firestore.set allows us to create a new collection or update an existing one. In this case we're calling it users. Since it doesnt already exist, firestore will create it for us.
             //the createdUser in our firebase auth will have its own created id called uid, so we'll use that to reference this newly created user's new document in the users collection in firebase.
             //also we're spreading the newUser properties onto the new user. The new user in firestore will look exactly like our newUser object from above.
@@ -60,9 +60,9 @@ export const registerUser = user => //user object with all the information that 
                     provider: selectedProvider,
                     type: 'popup' //the window will popup
                 });
-                // the user we're returning above has all kinds of data. Including one that isNewUser which tells us if this is a new user or not. So we'll check that and either add as new user or just do a regular login.
+                // the user we're returning above has all kinds of data. It has a uid as well for both existing and new users. Including one that isNewUser which tells us if this is a new user or not. So we'll check that and either add as new user or just do a regular login.
                 if (user.additionalUserInfo.isNewUser) { //this will only run if this is a new user. If not, the default behaviour is that a new user will be created.
-                    await firestore.set(`users/${user.user.uid}`, {
+                    await firestore.set(`users/${user.user.uid}`, {  //entering the actual data in the database
                         displayName: user.profile.displayName,
                         photoURL: user.profile.avatarUrl,
                         createdAt: firestore.FieldValue.serverTimestamp()

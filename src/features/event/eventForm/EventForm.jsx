@@ -1,11 +1,15 @@
 /*global google*/
 import React, { Component } from "react";
 import { Segment, Form, Button, Grid, Header } from "semantic-ui-react";
+
+//redux
 import { reduxForm, Field } from "redux-form";
 import { connect } from "react-redux";
 import { updateEvent, createEvent, cancelToggle } from "../eventActions";
 import { composeValidators, combineValidators, isRequired, hasLengthGreaterThan } from 'revalidate';
 import { geocodeByAddress, getLatLng } from 'react-places-autocomplete';
+
+//components
 import TextInput from "../../../app/common/form/TextInput";
 import TextArea from "../../../app/common/form/TextArea";
 import SelectInput from "../../../app/common/form/SelectInput";
@@ -35,7 +39,6 @@ const mapState = (state, ownProps) => {
   return {
     initialValues: event, //will get as props. initialValues prop helps initialize the form data
     event: event
-    
   };
 };
 
@@ -60,8 +63,6 @@ const category = [
   { key: "music", text: "Music", value: "music" },
   { key: "travel", text: "Travel", value: "travel" }
 ];
-
-
 
 class EventForm extends Component {
   //state = { ...this.props.event }; //getting event as props now because we're getting using mapState
@@ -104,7 +105,6 @@ class EventForm extends Component {
     await firestore.unsetListener(`events/${match.params.id}`);
   }
     
-    
     //  let event = await firestore.get(`events/${match.params.id}`); //this event above will give us a DocumentSnapshot of the event doc. Also since we're using withFirestore in here, this particular event will automatically be stored in the firestore reducer under the ordered data.
     // //since its all wrapped by the router, we stll have access to the match props
     // if(!event.exists && location.pathname !== '/createEvent') { //exists is a property that is true if such a document exists in firestore and false otherwise. So even if users typein random things in the browser and we try to get a document from the firestore based on an id that doesnt exist, we would still get a snapshot doc but of a doc that doesnt exist. W
@@ -116,10 +116,6 @@ class EventForm extends Component {
     //   })
     // }
       
-    
-  
-  
-
   handleCitySelect = selectedCity => {
     geocodeByAddress(selectedCity)
     .then(results => getLatLng(results[0])) //since results returns an array and we just wanna specify to get the first element and not in array form.
@@ -170,16 +166,15 @@ class EventForm extends Component {
 
   }
 
-
   render() {
-    const { history, initialValues, invalid, submitting, pristine, event, cancelToggle, location } = this.props;
+    const { history, initialValues, invalid, submitting, pristine, event, cancelToggle, location, handleSubmit } = this.props;
     return (
       <Grid>
         <Grid.Column width={10}>
           <Segment>
             <Header sub color="teal" content="Event Details" />
             <Form
-              onSubmit={this.props.handleSubmit(this.onFormSubmit)}
+              onSubmit={handleSubmit(this.onFormSubmit)}
               autoComplete="off"
             >
               <Field
@@ -257,7 +252,6 @@ class EventForm extends Component {
                     onClick={() => cancelToggle(!event.cancelled, event.id)}
                  />
               }
-              
             </Form>
           </Segment>
         </Grid.Column>
@@ -272,4 +266,3 @@ export default withFirestore(connect(
 )(reduxForm({ form: "eventForm", validate, enableReinitialize: true})(EventForm)));
 //The ordering has to be done like that because we’re now saying reduxForm takes 2 parameters;
 //a config with validate and form  name eventForm and 2nd param the EventForm component itself. Then that whole thing is passed as a parameter to connect.
-

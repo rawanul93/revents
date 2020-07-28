@@ -27,7 +27,7 @@ export const configureStore = () => {
         reactReduxFirebase(firebase, rrfConfig), // reactReduxFirebase is our store enhancer. It adds our firebase configuration to our store as well as takes the reactReduxFirebase configs as well.
         reduxFirestore(firebase)); //this also takes our firebase config as well
 
-    const store = createStore(rootReducer, composedEnhancer);
+    const store = createStore(rootReducer, composedEnhancer); //devToolEnhancer is included with composeWithDevTools
 
     return store;
 }

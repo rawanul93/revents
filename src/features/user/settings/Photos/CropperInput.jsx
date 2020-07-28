@@ -9,9 +9,9 @@ class CropperInput extends Component {
 
  cropImage = () =>  {
     const { setImage } = this.props;
-    if (typeof this.cropper.current.getCroppedCanvas() === 'undefined') {
+    if (typeof this.cropper.current.getCroppedCanvas() === 'undefined') {//this.cropper.current will give us access to the ref when we use the CreateRef method to get the element from the DOM.
         return; //if nothing is selected for cropping then we get undefined and we get out of this method
-    } //this.cropper.current will give us access to the ref when we use the CreateRef method to get the element from the DOM.
+    } 
     
     this.cropper.current.getCroppedCanvas().toBlob(blob => { //if something is crpoped we convert it to blob (blobs represent data like a file like object. In this case its the cropped image data we get from the DOM)
         setImage(blob);

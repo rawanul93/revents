@@ -49,11 +49,13 @@ const PhotosPage = ({
   const [files, setFiles] = useState([]); //state is files and setFiles sets that state to whatever we want. Initial state we assign it is an empty array. Even though we limit users to drop multiple files, we'll still receive single files as an array.
   const [image, setImage] = useState(null); //store cropped image as a blob.
 
-  useEffect(() => {
-    return () => {
-      files.forEach((file) => URL.revokeObjectURL(file.preview)); //clean up the preview object that was created.
+  useEffect(() => { //this will run after the render is completed to the screen.
+    return () => {   
+      
+      files.forEach((file) => {
+        URL.revokeObjectURL(file.preview)}); //clean up the preview object that was created.
     };
-  }, [files]); //to avoid the dependancy warning.
+  }); //to avoid the dependancy warning.
 
   const handleUploadImage = async () => {
     //async method because it may take some time to execute this.
@@ -90,8 +92,9 @@ const PhotosPage = ({
       toastr.error("Oops!", error.message);
     }
   };
-
+  
   return (
+    
     <Segment>
       <Header dividing size="large" content="Your Photos" />
       <Grid>

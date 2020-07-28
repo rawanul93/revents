@@ -15,7 +15,7 @@ const DateInput = ({
   return (
     <Form.Field error={touched && !!error}>
       <DatePicker 
-      {...rest} //assigning every other property except the ones we exclusively destructured.
+      {...rest} //assigning every other property except the ones we exclusively destructured. Has props we're passing in like dateFormat, timeFormat and showTimeSelect.
       placeholderText={placeholder}
       //selected={input.value ? new Date(input.value) : null} //This is for when we select a date.  If we dont then the value is null. We also need to turn the date we get from the input.value into Javascript Date first for DatePicker to work with. 
      
@@ -26,8 +26,8 @@ const DateInput = ({
             : value //if it IS a js date, then we just pass in the actual value
             : null  //if there isnt any value at all, we pass in null.
       }
-      onChange={onChange}
-      onBlur={(e, value) => onBlur(value)} //lets you know if the user has clicked in or out of the field.
+      onChange={onChange}//onChange we get from redux form is being set to the onChange we gotta set for reactDatePicker
+      onBlur={(e, value) => onBlur(value)} //onBlur lets you know if the user has clicked in or out of the field. But there is a bug with onBlur where choosing a date and then clicking out of the field doesnt register the date as a js date and converts to a string. So we'll pass it the reduxForms input.onBlur which handles this properly.
       onChangeRaw={(e) => e.preventDefault()} //its executed when a user types into the field. This makes sure you cant type into the field which we dont want since its a datepicker.
       />
     {touched && error && <Label basic color='red'>{error}</Label>}
