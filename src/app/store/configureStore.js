@@ -3,7 +3,7 @@ import rootReducer from "../reducers/rootReducer";
 import { composeWithDevTools } from 'redux-devtools-extension';
 import thunk from "redux-thunk";
 import firebase from '../config/firebase'; //getting firebase with our custom config
-import {reduxFirebase, getFirestore, reduxFirestore} from 'redux-firestore'
+import { getFirestore, reduxFirestore} from 'redux-firestore' //this and the bottom packages gives us bindings so that we can connect our components directly to firestore and will be able to set listeners in those components so that we can listen to the data firebase gives us.
 import { reactReduxFirebase, getFirebase } from "react-redux-firebase";
 // getFirebase allows us to get an instance of our firebase inside our actions. Once we have access to our firebase instance we'll have acess to the firebase API. Which means we can update/delete/add etc.
 
@@ -24,7 +24,7 @@ export const configureStore = () => {
 
     const composedEnhancer = composeWithDevTools( //these are our store enhancers
         applyMiddleware(...middlewares), //gives us access to our middlewares which gives us access to thunks which now has extra features like getFirestore and getFirebase
-        reactReduxFirebase(firebase, rrfConfig), // reactReduxFirebase is our store enhancer. It adds our firebase configuration to our store as well as takes the reactReduxFirebase configs as well.
+        reactReduxFirebase(firebase, rrfConfig), // reactReduxFirebase is our store enhancer. It adds our firebase configuration to our store as well as takes the reactReduxFirebase configs as well. It also allows to get an instant of firebase inside our actions.
         reduxFirestore(firebase)); //this also takes our firebase config as well
 
     const store = createStore(rootReducer, composedEnhancer); //devToolEnhancer is included with composeWithDevTools

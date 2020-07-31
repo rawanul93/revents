@@ -95,15 +95,32 @@ class EventForm extends Component {
   }
 
   async componentDidMount() {
-    const { firestore, match } = this.props;
+    const { firestore, match} = this.props;
     await firestore.setListener(`events/${match.params.id}`); //automatically sets our listeners for us. We're doing it manually here.
+    // if(event && match.params.id === event.id) {
+    //   await firestore.setListener(`events/${match.params.id}`); //automatically sets our listeners for us. We're doing it manually here.
+    //   //we have the setListener instead of .get because now we're getting live data from firestore which we need in order to see the live changes for the cancelToggle button
+    //   return;
+    // }
+    // if(location.pathname === '/createEvent') {
+    //  return; //so  if the doc doesnt exist we'll send users back to the list
+    // } 
+    // else history.push('/');
+    
     
   }
 
-  async componentWillUnmount(){
-    const { firestore, match } = this.props;
+  async componentWillUnmount() {
+    const { firestore, match} = this.props;
     await firestore.unsetListener(`events/${match.params.id}`);
-  }
+  //   } else if (event.exists) { 
+  //     this.setState({//if the event does exist. We definitely want to populate our local venueLatLng state because otherwise when we update an event, if the local state venueLatLng is empty, that is what is assigned in the updated event.
+  //       venueLatLng: event.data().venueLatLng
+  //     })
+  
+     
+  // }
+}
     
     //  let event = await firestore.get(`events/${match.params.id}`); //this event above will give us a DocumentSnapshot of the event doc. Also since we're using withFirestore in here, this particular event will automatically be stored in the firestore reducer under the ordered data.
     // //since its all wrapped by the router, we stll have access to the match props
@@ -144,17 +161,17 @@ class EventForm extends Component {
 
   onFormSubmit = async (values) => { //values will have all the things we enter in our form.
     
-    values.venueLatLng = this.state.venueLatLng;
+    values.venueLatLng = this.state.venueLatLng; //since we set our venueLatLng from local state, when we mount this component, the local state resets it.
 
     const { createEvent, updateEvent, initialValues } = this.props;
     try {
-      if(initialValues.id) {
-        if(Object.keys(values.venueLatLng).length === 0) {
-          values.venueLatLng = this.props.event.venueLatLng;
+      if(initialValues.id) { //that is if user is editing an event already created.
+        if(Object.keys(values.venueLatLng).length === 0) { //Object.keys for an empty object returns 0 for the array length. We convert into an array first to apply the .length method.
+          values.venueLatLng = this.props.event.venueLatLng; //if when editing, the user doesnt change the location, the values.latlng will be zero since we store it as local state and when mounting this it gets set to zero again. So we need to repopulate it with the original values from the event being edited. 
         }
         updateEvent(values); //check that we added an else statement to our componentDidMount so as to populate the local state venueLatLng with the appropriate values. Because otherwise when the component mounts, it resets back to the initial state which we assigned as empty. 
         this.props.history.push(`/events/${initialValues.id}`); //go to event detailed page
-      } else {
+      } else { //if creating a new event.
         //values.venueLatLng = this.state.venueLatLng; //copying the venueLatLng from state to the event itself.
         let createdEvent = await createEvent(values);
         this.props.history.push(`/events/${createdEvent.id}`);
@@ -208,7 +225,6 @@ class EventForm extends Component {
                 component={PlaceInput}
                 options={{
                   location: new google.maps.LatLng(this.state.cityLatLng), //normally google.maps shows an error of saying its undefined. So we used /*global google*/ at the very top of this file before the imports to get rid of that warning.
-
                   radius: 1000,
                   types: ['establishment']
                 }}
@@ -266,3 +282,4 @@ export default withFirestore(connect(
 )(reduxForm({ form: "eventForm", validate, enableReinitialize: true})(EventForm)));
 //The ordering has to be done like that because we’re now saying reduxForm takes 2 parameters;
 //a config with validate and form  name eventForm and 2nd param the EventForm component itself. Then that whole thing is passed as a parameter to connect.
+//enableReinitialize allow us to ua

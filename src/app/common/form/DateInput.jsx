@@ -19,12 +19,12 @@ const DateInput = ({
       placeholderText={placeholder}
       //selected={input.value ? new Date(input.value) : null} //This is for when we select a date.  If we dont then the value is null. We also need to turn the date we get from the input.value into Javascript Date first for DatePicker to work with. 
      
-      selected={ 
-          value //first we see if we have a value, if we do, then we execute the next line.
-          ? (Object.prototype.toString.call(value) !== '[object Date]')  //we check if value of the input date is a javascript date object or not. If not, then we convert it to a js date by executing the next line. 
-            ? value.toDate() //this is executed if the above is true i.e. the date value is NOT a js date, so we convert it to one.
-            : value //if it IS a js date, then we just pass in the actual value
-            : null  //if there isnt any value at all, we pass in null.
+      selected={  //we need to do this because we get a timestamp as the date back from firebase and we need to handle that properly.
+          value ?//first we see if we have a value, if we do, then we execute the next line.
+            (Object.prototype.toString.call(value) !== '[object Date]') ? //we check if value of the input date is a javascript date object or not. If not, that means its a firestore timestamp. Then we need to convert it to a js date by executing the next line. 
+              value.toDate() //this is executed if the above is true i.e. the date value is NOT a js date, so we convert it to one.
+              : value //if it IS a js date, then we just pass in the actual value
+          : null  //if there isnt any value at all, we pass in null.
       }
       onChange={onChange}//onChange we get from redux form is being set to the onChange we gotta set for reactDatePicker
       onBlur={(e, value) => onBlur(value)} //onBlur lets you know if the user has clicked in or out of the field. But there is a bug with onBlur where choosing a date and then clicking out of the field doesnt register the date as a js date and converts to a string. So we'll pass it the reduxForms input.onBlur which handles this properly.

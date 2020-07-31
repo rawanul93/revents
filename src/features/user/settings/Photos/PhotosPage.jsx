@@ -13,7 +13,7 @@ import {
 import { toastr } from "react-redux-toastr";
 import UserPhotos from "./UserPhotos";
 
-const query = ({ auth }) => {
+const query = ({ auth }) => { //need to get the auth to know which user is currently using this.
   return [
     //thats just how its done using a an array with an object in it. Check EventDashboard component where the path is simple enough that we dont need an extra function to simplify the code.
     {
@@ -33,8 +33,8 @@ const actions = {
 
 const mapState = (state) => ({
   auth: state.firebase.auth,
-  profile: state.firebase.profile,
-  photos: state.firestore.ordered.photos,
+  profile: state.firebase.profile, //we need to get the user's photoURL that is in his main photo.
+  photos: state.firestore.ordered.photos, //this photos is what we'er getting from firestoreConnect.
   loading: state.async.loading
 });
 
@@ -60,7 +60,8 @@ const PhotosPage = ({
   const handleUploadImage = async () => {
     //async method because it may take some time to execute this.
     try {
-      await uploadProfileImage(image, files[0].name);
+      console.log(files);
+      await uploadProfileImage(image, files[0].name); //the name is the actual name of the file that we have uploaded.
       handleCancelCrop(); //clear the images from the user's screen.
       toastr.success("Success!", "Photo has been uploaded");
     } catch (error) {
@@ -69,7 +70,7 @@ const PhotosPage = ({
     }
   };
 
-  const handleCancelCrop = () => {
+  const handleCancelCrop = () => { //need to reset the state once the upload is done.
     setFiles([]);
     setImage(null);
   };
@@ -106,9 +107,9 @@ const PhotosPage = ({
         <Grid.Column width={1} />
         <Grid.Column width={4}>
           <Header sub color="teal" content="Step 2 - Resize image" />
-          {files.length > 0 && (
+          {files.length > 0 && ( //if the files state is empty then cropper input will not even render.
             <CropperInput imagePreview={files[0].preview} setImage={setImage} />
-          ) // sending the image preview from dropzone to our Cropper component. Also sending the setImage method to set the state for the cropped image */}
+          ) // sending the image preview from dropzone to our Cropper component which is what it uses to crop the file and set it as the image. Also sending the setImage method to set the state for the cropped image */}
           }
         </Grid.Column>
         <Grid.Column width={1} />
@@ -160,6 +161,6 @@ const PhotosPage = ({
 export default compose(
   //just allows us to line up our higher order components downwards to make it look neater.
   connect(mapState, actions),
-  firestoreConnect((auth) => query(auth)) //so with this we need to specify the collection we're referring to. Since the path to the collection we want is sort of long, and we dont want this part to get messy, we'll pass just create a query function to represent the path to the photos collection for our user.
+  firestoreConnect((auth) => query(auth)) //we have the auth available because we got that from the mapState. We call query and pass that in to get to the users collection and then further into the photos subcollection. We couldve done that directly here, but we'll do it as a function we call query, so that it looks less messy.
   // we are using auth here to pass in to our query function. We need auth to get the uid
 )(PhotosPage);

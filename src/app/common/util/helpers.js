@@ -1,6 +1,14 @@
 export const objectToArray = (object) => {
     if (object) {
         return Object.entries(object).map(e => Object.assign({}, e[1], {id: e[0]})) //now this is an array
+
+        //Object.entries returns the key/values of the innumerable peroperties of an object.So its basically giving us both the key and the values inside the object. 
+        //Now we can map over it. For each element we will apply Object.assign, which allows us to take a copy of an object and the first element we pass is the target i.e. where we want to copy the values into. In our case its an empty object.
+        //e is the source object from which to copy the properties from. e[1] has all the properties of the object we passed in since Object.entries converts it into an array with the key as e[0] and the rest of the props as e[1].
+        //So now we'll pass another source that we want to copy into this empty object in assign, and that will be the id which we stored in e[0].
+        
+
+
         //Object.entries converts the attendees into an object with first entry as the attendee id and the second entry as an object that holds all the attendee information.
         //But we want this as one single entry i.e. an array where for an attendee it will be a sigle entry in the array with attendee id included.
         //Therefore we map over the entries object and create a new array with one entry per attendee using Object.assign.

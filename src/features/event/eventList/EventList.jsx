@@ -8,7 +8,7 @@ class EventList extends Component {
     return (
       <Fragment>
         {events && events.length !== 0 && (
-          <InfiniteScroll pageStart={0} loadMore={getNextEvents} hasMore={!loading && moreEvents} initialLoad={false}> {/*loadMore is a callback for when more items are requested by the user i.e. theyre scrolling down*/}
+          <InfiniteScroll pageStart={0} loadMore={getNextEvents} hasMore={!loading && moreEvents} initialLoad={false}> {/*loadMore is a callback for when more items are requested by the user i.e. theyre scrolling down.*/}
             {events &&
               events.map((event) => (
                 <EventListItem key={event.id} event={event} />

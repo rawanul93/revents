@@ -14,7 +14,7 @@ export const userDetailedQuery = ({ auth, userUid }) => {
       }
     ];
   } else {
-    return [
+    return [ //if it is the current user logged in, we dont need to get the profile seperately because thats already stored in state.firebase.profile
       {
         collection: "users",
         doc: auth.uid,

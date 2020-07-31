@@ -54,7 +54,7 @@ class EventDetailedChat extends Component {
                       {comment.displayName}
                     </Comment.Author>
                     <Comment.Metadata>
-                      <div>{formatDistance(comment.date, Date.now())}</div>
+                      <div>{formatDistance(comment.date, Date.now())}</div> {/*formatDistance is from date-fns. It gives us how long ago the comment was made */}
                     </Comment.Metadata>
                     <Comment.Text>{comment.text}</Comment.Text>
                     <Comment.Actions>
@@ -71,7 +71,7 @@ class EventDetailedChat extends Component {
                             eventId={eventId}
                             form={`reply_${comment.id}`} //We want each reply to be identifyable uniquely so that when we click on the reply button, the reply form is open for that specific comment only and not all of them. It was all of them before because every comment/reply was creating a form component with one static name. So when we clicked on the reply button, couldnt distinguish for which comment we should open this form for. So now we'll name it dynamically.
                             closeForm={this.handleCloseReplyForm}
-                            parentId={comment.id}
+                            parentId={comment.id} //when we're replying to the original comment, the parentId will be that of the actual comment.
                           />
                         )}
                     </Comment.Actions>
@@ -110,7 +110,7 @@ class EventDetailedChat extends Component {
                                     eventId={eventId}
                                     form={`reply_${child.id}`} //We want each reply to be identifyable uniquely so that when we click on the reply button, the reply form is open for that specific comment only and not all of them. It was all of them before because every comment/reply was creating a form component with one static name. So when we clicked on the reply button, couldnt distinguish for which comment we should open this form for. So now we'll name it dynamically.
                                     closeForm={this.handleCloseReplyForm}
-                                    parentId={child.parentId} //for when we are replying to another reply, the childs parentId stored would be the id of the reply, but we want it to be the parentId of the reply instead, since that would also be the parent of this reply anyway.
+                                    parentId={child.parentId} //when we are replying to another reply, the parentId for that will be the id of the reply we are relying to, which is the of the child's parent (the original comment)
                                   />
                                 )}
                             </Comment.Actions>
@@ -126,7 +126,7 @@ class EventDetailedChat extends Component {
             addEventComment={addEventComment}
             eventId={eventId}
             form={"newComment"} //the form will be called newComment and thats is how we'll identify it for when a new comment is made versus when a reply is made.
-            parentId={0}
+            parentId={0} //for new comments there is no parent. So its 0.
           />
         </Segment>
       </Fragment>

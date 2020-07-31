@@ -31,7 +31,7 @@ const Account = ({
   submitting,
   updatePassword,
   providerId,
-  handleSubmit
+  handleSubmit //this is from redux forms.
 }) => {
   return (
     <Segment>

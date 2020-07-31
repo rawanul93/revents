@@ -3,9 +3,9 @@ import { Header, Card, Image, Button } from "semantic-ui-react";
 
 const UserPhotos = ({ photos, profile, deletePhoto, setMainPhoto }) => {
     let filteredPhotos;
-    if (photos) {
+    if (photos) { //if there are any photos already in the user's collection photos.
        filteredPhotos = photos.filter(photo => {
-           return photo.url !== profile.photoURL
+           return photo.url !== profile.photoURL //filter out all the photos that are NOT the main photo. We use the profile because we always keep it updated.
        }) 
     }
   return (
@@ -17,7 +17,7 @@ const UserPhotos = ({ photos, profile, deletePhoto, setMainPhoto }) => {
           <Button positive>Main Photo</Button>
         </Card>
 
-        {photos &&
+        {photos && //we displayed the main photo with the above code. Now we're gonna display all the other photos.
           filteredPhotos.map((photo) => (
             <Card key={photo.id}>
               <Image src={photo.url} />

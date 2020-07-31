@@ -12,15 +12,14 @@ export const createEvent = (event) => {
         const firestore = getFirestore();
         const firebase = getFirebase();
         const user = firebase.auth().currentUser;
-        const photoURL = getState().firebase.profile.photoURL; // we can use getState to get the photo because firebase automatically loads up the profile when a user logs in because in our auth actions we set up up that when a user signs in, the firebase auth is immediately updated with t
+        const photoURL = getState().firebase.profile.photoURL; // we can use getState to get the photo because firebase automatically loads up the profile when a user logs in because in our auth actions we set up that when a user signs in, the firebase auth is immediately updated
         const newEvent = createNewEvent(user, photoURL, event) // this is in the helper.js file. We kept it there so as to avoid the clutter.
         try {
+           
             let createdEvent = await firestore.add('events', newEvent); // adding newEvent to the event collection. The createdEvent is the document snapShot. So now we can use the createdEvent id. We use .add when we add a document where we want firestore to give a unique id when creating it. I.e. we are not exclusively setting a specific id or referring to one.
-            await firestore.set(`event_attendee/${
-                createdEvent.id
-            }_${
-                user.uid
-            }`, { // this is to setup a doc which we will use for easily quering events based on events that user us attending, past events and the ones he/she has hosted. Here we use .set because we want to add this document based on a specific id that we want which in this case is the event id.
+            
+            await firestore.set(`event_attendee/${ //doing .set here because unlike the above where we use .add, we know the id we want to give it.
+                createdEvent.id}_${user.uid}`, { // this is to setup a doc which we will use for easily quering events based on events that user us attending, past events and the ones he/she has hosted. Here we use .set because we want to add this document based on a specific id that we want which in this case is the event id.
                 eventId: createdEvent.id,
                 userUid: user.uid,
                 eventDate: event.date,
@@ -28,7 +27,7 @@ export const createEvent = (event) => {
             })
             toastr.success('Success', 'Event has been created');
 
-            return createdEvent; // since this is a async function, it automatically return with a Promise. So we can return our createdEvent like this.
+            return createdEvent; // since this is a async function, it automatically returns with a Promise. So we can return our createdEvent like this.
         } catch (error) {
             toastr.error('Oops', 'Something went wrong')
         }
@@ -36,12 +35,13 @@ export const createEvent = (event) => {
 }
 
 export const updateEvent = (event) => {
-    return async (dispatch, getState, {getFirestore}) => {
+    return async (dispatch, getState, {getFirebase, getFirestore}) => {
         const firestore = getFirestore();
+        // const firebase = getFirebase();
         try {
-            await firestore.update(`events/${
-                event.id
-            }`, event)
+            // console.log('111', firebase);
+            // console.log('222', getState().firebase);
+            await firestore.update(`events/${event.id}`, event)
             toastr.success('Success', 'Event has been updated');
         } catch {
             toastr.error('Oops', 'Something went wrong')
@@ -65,18 +65,15 @@ export const cancelToggle = (cancelled, eventId) => async (dispatch, getState, {
 
 export const getEventsForDashboard = (lastEvent) => // for the query cursor. Here lastEvent is not the doc itself and it is the last event that is being displayed in the dashboard. We're basically gonna start loading more events when the user scrolls down but we'll load events that start after this one.
 async (dispatch, getState) => {
-    let today = new Date(Date.now());
-    const firestore = firebase.firestore();
+    // let today = new Date(Date.now());
+    const firestore = firebase.firestore(); //since we're gonna use our own reducer to store the events on the dashboard, we wont be using the react-redux-firebase getFirebase/getFirestore
 
-    const eventsRef = firestore.collection('events');
-    // just a reference const
+    const eventsRef = firestore.collection('events'); // just a reference const
+    // const eventsQuery = firestore.collection('events').where('date', '>=', today); // this is not sending the query direct to firestore yet. We need to write .get() to this in order to execute it. Its just building the query up in memory. goal is to get all of our events that is in the future.
 
-    // const eventsQuery = firestore.collection('events').where('date', '>=', today); // goal is to get all of our events that is in the future.
-    // this is not sending the query direct to firestore yet. Its just building the query up in memory.
     try {
         dispatch(asyncActionStart());
-        let startAfter = lastEvent && await firestore.collection('events').doc(lastEvent.id).get();
-        // this is to get the document itself which we'll start loading after. Because this is how paging works, this is the query cursor.
+        let startAfter = lastEvent && await firestore.collection('events').doc(lastEvent.id).get(); // this is to get the document itself which we'll start loading after. Because this is how paging works, this is the query cursor.
         // let querySnap = await eventsQuery.get() //executes the query and returns a QuerySnapshot. This snapshot will have our docs containing all future events as docs
         let query;
 
@@ -85,9 +82,9 @@ async (dispatch, getState) => {
             .orderBy('date').startAfter(startAfter).limit(2)  //startAfter() is a firestore method which lets us start after the document we pass to it.
         : query = eventsRef
             //.where('date', '>=', today)
-            .orderBy('date').limit(2); // query is not executed yet without the get(). This is just storing the query in memory.
+            .orderBy('date').limit(2); //just quering the first two events and query is not executed yet without the get(). This is just storing the query in memory.
 
-        let querySnap = await query.get();
+        let querySnap = await query.get(); //executing the actual query. After this we can do .data() to get all the neccessary info.
 
         if(querySnap.docs.length === 0) { //we need to let our EventDashboard component know if there are any more events to load or not. Since we cant actually efficiently find out the total number of events docs in our database, we'll just check if our query snapshot has any more docs inside it. If it doesnt, then there are no more events and we'll just return.
             dispatch(asyncActionFinish());
@@ -96,10 +93,11 @@ async (dispatch, getState) => {
 
         let events = [];
         for (let i = 0; i < querySnap.docs.length; i++) {
+            console.log(querySnap.docs[i].data())
             let evt = {
-                ...querySnap.docs[i].data(),
+                ...querySnap.docs[i].data(), //the data() method retrieves all the fields from the doc as an object. We're also creating and populating the id as a field here, becasue even though the events all have their ids its not a field inside the doc itself which is what we're making the array out of.
                 id: querySnap.docs[i].id
-            } // the data() method retrieves all the fields from the doc as an object. We're also creating and populating the id as a field here, becasue even though the events all have their ids its not a field inside the doc itself which is what we're making the array out of.
+            } 
             events.push(evt); // populating our empty events array with each event as a object.
         }
         
@@ -131,7 +129,7 @@ export const addEventComment = (eventId, values, parentId) =>
             await firebase.push(`event_chat/${eventId}`, newComment)  //in firebase we push items with their location.
         } catch (error) {
             console.log(error)
-            toastr('Oops', 'Problem adding comment');
+            toastr.error('Oops', 'Problem adding comment');
         }
     }
 
