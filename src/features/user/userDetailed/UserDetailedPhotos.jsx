@@ -1,5 +1,5 @@
 import React from 'react'
-import { Grid, Segment, Header, Image, Icon } from 'semantic-ui-react';
+import { Grid, Segment, Header, Image } from 'semantic-ui-react';
 import LazyLoad from 'react-lazyload';
 import { Link } from 'react-router-dom';
 

@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from "react";
+import React, { Component, Fragment, createRef } from "react";
 import { Grid, Loader, Header, Segment } from "semantic-ui-react";
 import EventList from "../eventList/EventList";
 import { connect } from "react-redux";
@@ -7,13 +7,19 @@ import LoadingComponent from "../../../app/layout/LoadingComponent";
 import EventActivity from "../eventActivity/EventActivity";
 import { firestoreConnect } from "react-redux-firebase"; // isLoaded can be imported here and we use this to load our events from the firestore into our firestore reducer. From which we extract the events as props.
 
+const query = [
+  {
+    collection: 'activity',
+    orderBy: ['timestamp', 'desc'],
+    limit: 5
+  }
+]
+
 const mapState = (state) => ({
   //events: state.firestore.ordered.events //this is how we would get events if we were listening to the firestore via firestoreConnect
   events: state.events, //from our event reducer. This is the number of events currently loaded from firebase via the getEventsForDashboard method.
-  loading: state.async.loading
-  // events: state.firestore.ordered.events, //getting the initial state from the store. We get to do this because we're using firestoreConnect for this component.
-  //its state.firestore because we called that reducer events in the rootReducer.
-  //this is passed on from the store as props
+  loading: state.async.loading,
+  activities: state.firestore.ordered.activity //getting activities by listening to firestore
 });
 
 const actions = {
@@ -21,51 +27,9 @@ const actions = {
 };
 
 class EventDashboard extends Component {
-  //   handleIsOpenToggle = () => {
-  //     //setState lets you access what the prev state was
-  //     //this allows us to use have toggle like features
-  //     //below isOpen is always set to the opposite of what the prevState was
-  //     this.setState((prevState) => ({
-  //       isOpen: !prevState.isOpen
-  //     }));
-  //   };
-  // handleCreateEvent = (newEvent) => {
-  //   newEvent.id = cuid();
-  //   newEvent.hostPhotoURL = "/assets/user.png";
 
-  //   this.props.createEvent(newEvent);
-  // this.setState(({ events }) => ({
-  //   isOpen: false
-  // }));
-  //events is destructured from prevState.events
-  //we want to use the previous state to get the
-  //events that were there in previously so that we can
-  //add the new event properly
-  // ... is a spread operator. This abpve line is
-  //creating a new array where the this.state.events
-  //is spread out i.e. in this case spread into its 2 events
-  //and a third event, newEvent is added as well with a total of 3 events in the new array
-
-  // handleUpdateEvent = (updatedEvent) => {
-  //   this.props.updateEvent(updatedEvent);
-
-  //   // this.setState(({ events }) => ({ //destructuring to get prevState events list
-  //   //   events: events.map((event) => { //remember that .map returns something. In this case we're returning events list including the updated one
-  //   //     if (event.id === updatedEvent.id) {
-  //   //       return { ...updatedEvent }; //this will spread the updated event properties and return that as a new event in our events array instead of the existing event
-  //   //     } else {
-  //   //       return event;
-  //   //     }
-  //   //   }),
-
-  //   // }));
-  // };
-
-  // this.setState(({ events }) => ({
-  //     events: events.filter(event => event.id !==  id) //filter through and give us events not equal to the id. So we're basically getting a new events array not including one with the id of selected event to delete.
-  //     //filter allows us to specify a callback function inside here that  Returns the elements of an array that meet the condition specified in a callback function.
-  //   //this creates a new array that we are gonna assign to our events in state
-  //   }))
+  contextRef = createRef(); //we need this to access the dom directly so that we can give our activity feed a reference to stick to since we're going to have it stick to the side of this dashboard when scrolling.
+  
   state = {
     moreEvents: false,
     loadingInitial: true, //loading indicator for when we initially open up this page
@@ -116,7 +80,7 @@ class EventDashboard extends Component {
   };
 
   render() {
-    const { loading } = this.props; 
+    const { loading, activities } = this.props; 
     const { moreEvents, loadedEvents, loadingInitial, noEventsExist } =  this.state;
 
     if (loadingInitial) {//only show this loading component when we initially load up this page.
@@ -125,16 +89,18 @@ class EventDashboard extends Component {
     return (
       <Grid>
         <Grid.Column width={10}>
-        {noEventsExist ? 
-          <Fragment>
-            <Header>No Events Exist!</Header>
-            <Segment>Click on 'Create Event' to add events!</Segment>
-          </Fragment>
-          : <EventList events={loadedEvents} getNextEvents={this.getNextEvents} loading={loading} moreEvents={moreEvents}/>
-        }
+        <div ref={this.contextRef}>
+          {noEventsExist ? 
+            <Fragment>
+              <Header>No Events Exist!</Header>
+              <Segment>Click on 'Create Event' to add events!</Segment>
+            </Fragment>
+            : <EventList events={loadedEvents} getNextEvents={this.getNextEvents} loading={loading} moreEvents={moreEvents}/>
+          }
+        </div>
         </Grid.Column>
         <Grid.Column width={6}>
-          <EventActivity />
+          <EventActivity activities={activities} contextRef={this.contextRef}/>
         </Grid.Column>
         <Grid.Column width={10}>
             <Loader active={loading}/> {/*loading indicator for when scrolling down */}
@@ -147,17 +113,10 @@ class EventDashboard extends Component {
 export default connect(
   mapState,
   actions
-)(firestoreConnect([{ collection: "events" }])(EventDashboard));
+)(firestoreConnect(query)(EventDashboard));
 //firestoreConnect allows us to listen into the events which we get from firestore.
 //but this will not work for our paging because we're gonna display events on our page based on the current time and since firestoreConnect is a listener, it will constantly update which we dont neccessarily want. So we'll use firebase api directly and use our own reducer instead of react-redux-firebase.
 
 //So we're passing in firestoreConnect to our higher order component connect.
 //firestoreConnect takes in arrays of queries in the form of objects.
 //then we're passing in EventDashboard to our firestoreConnect
-
-/*For our EventForm component, the key is used in order 
-    to determine how react should re-render the EventForm component.
-    If we did not pass a key, even if we receive an update in the props,
-    the component does not re-render since the state does not change in EventForm.
-    Using key, react creates a new component instance rather than updating the current one
-     */

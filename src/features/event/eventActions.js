@@ -65,7 +65,7 @@ export const cancelToggle = (cancelled, eventId) => async (dispatch, getState, {
 
 export const getEventsForDashboard = (lastEvent) => // for the query cursor. Here lastEvent is not the doc itself and it is the last event that is being displayed in the dashboard. We're basically gonna start loading more events when the user scrolls down but we'll load events that start after this one.
 async (dispatch, getState) => {
-    // let today = new Date(Date.now());
+    let today = new Date(Date.now());
     const firestore = firebase.firestore(); //since we're gonna use our own reducer to store the events on the dashboard, we wont be using the react-redux-firebase getFirebase/getFirestore
 
     const eventsRef = firestore.collection('events'); // just a reference const
@@ -78,10 +78,10 @@ async (dispatch, getState) => {
         let query;
 
         lastEvent ? query = eventsRef
-            //.where('date', '>=', today)
+            .where('date', '>=', today)
             .orderBy('date').startAfter(startAfter).limit(2)  //startAfter() is a firestore method which lets us start after the document we pass to it.
         : query = eventsRef
-            //.where('date', '>=', today)
+            .where('date', '>=', today)
             .orderBy('date').limit(2); //just quering the first two events and query is not executed yet without the get(). This is just storing the query in memory.
 
         let querySnap = await query.get(); //executing the actual query. After this we can do .data() to get all the neccessary info.
@@ -115,7 +115,7 @@ async (dispatch, getState) => {
 export const addEventComment = (eventId, values, parentId) => 
     async (dispatch, getState, {getFirebase}) => {
         const firebase = getFirebase();
-        const profile = getState().firebase.profile;
+        const profile = getState().firebase.profile; //getting all the info we want to provide to our chat component so that it can display all the neccesary info.
         const user = firebase.auth().currentUser
         let newComment = {
             parentId: parentId,
