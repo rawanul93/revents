@@ -22,6 +22,7 @@ import { withFirestore } from "react-redux-firebase";
 //the onChange is used to detect changes in the input field
 //and to call the handleInputChange function to set the state accordingly.
 
+
 const actions = {
   updateEvent,
   createEvent,
@@ -38,9 +39,20 @@ const mapState = (state, ownProps) => {
   }
   return {
     initialValues: event, //will get as props. initialValues prop helps initialize the form data
-    event: event
+    event: event,
+    loading: state.async.loading
   };
 };
+
+const category = [
+  { key: "drinks", text: "Drinks", value: "drinks" },
+  { key: "culture", text: "Culture", value: "culture" },
+  { key: "film", text: "Film", value: "film" },
+  { key: "food", text: "Food", value: "food" },
+  { key: "music", text: "Music", value: "music" },
+  { key: "travel", text: "Travel", value: "travel" }
+];
+
 
 const validate = combineValidators({
   title: isRequired({message: 'The event title is required'}),
@@ -55,39 +67,7 @@ const validate = combineValidators({
 
 })
 
-const category = [
-  { key: "drinks", text: "Drinks", value: "drinks" },
-  { key: "culture", text: "Culture", value: "culture" },
-  { key: "film", text: "Film", value: "film" },
-  { key: "food", text: "Food", value: "food" },
-  { key: "music", text: "Music", value: "music" },
-  { key: "travel", text: "Travel", value: "travel" }
-];
-
 class EventForm extends Component {
-  //state = { ...this.props.event }; //getting event as props now because we're getting using mapState
-  // componentDidMount() {
-  //   if (this.props.event !== null) {
-  //     //state is set here ONLY if there is a selected event.
-  //     this.setState({
-  //       ...this.props.event
-  //       //the spread operator here takes each element
-  //       //in this.props.selectedEvent and spreads it
-  //       //into the matching elemets in our state
-  //       //i.e. title gets assigned title from selectedEvent now.
-  //     });
-  //   }
-  // }
-
-  // handleInputChange = ({ target: { name, value } }) => {
-  //   //destructuring event.target to get event.target.name and value
-  //   this.setState({
-  //     [name]: value
-  //     //the square brackets above allow us to access
-  //     //whichever name we want inside the state object
-  //     //the name we grap from the name of the input tags
-  //   });
-  // };
 
   state = { //Local state just to store the city and venue lat and long in order to narrow down search results.
     cityLatLng: {},
@@ -121,18 +101,7 @@ class EventForm extends Component {
      
   // }
 }
-    
-    //  let event = await firestore.get(`events/${match.params.id}`); //this event above will give us a DocumentSnapshot of the event doc. Also since we're using withFirestore in here, this particular event will automatically be stored in the firestore reducer under the ordered data.
-    // //since its all wrapped by the router, we stll have access to the match props
-    // if(!event.exists && location.pathname !== '/createEvent') { //exists is a property that is true if such a document exists in firestore and false otherwise. So even if users typein random things in the browser and we try to get a document from the firestore based on an id that doesnt exist, we would still get a snapshot doc but of a doc that doesnt exist. W
-    //   history.push('/events'); //so  if the doc doesnt exist we'll send users back to the list
-    //   toastr.error('Sorry', 'Event not found')
-    // } else if (event.exists) {
-    //   this.setState({//if the event does exist. We definitely want to populate our local venueLatLng state because otherwise when we update an event, if the local state venueLatLng is empty, that is what is assigned in the updated event.
-    //     venueLatLng: event.data().venueLatLng
-    //   })
-    // }
-      
+
   handleCitySelect = selectedCity => {
     geocodeByAddress(selectedCity)
     .then(results => getLatLng(results[0])) //since results returns an array and we just wanna specify to get the first element and not in array form.
@@ -184,7 +153,7 @@ class EventForm extends Component {
   }
 
   render() {
-    const { history, initialValues, invalid, submitting, pristine, event, cancelToggle, location, handleSubmit } = this.props;
+    const { history, initialValues, invalid, submitting, pristine, event, cancelToggle, location, handleSubmit, loading } = this.props;
     return (
       <Grid>
         <Grid.Column width={10}>
@@ -240,7 +209,7 @@ class EventForm extends Component {
                 timeFormat= 'HH:mm' //24hr timepicker
               />
 
-              <Button disabled={invalid || submitting || pristine} positive type="submit">
+              <Button disabled={invalid || submitting || pristine} loading={loading} positive type="submit">
                 Submit
               </Button>
                
@@ -254,6 +223,7 @@ class EventForm extends Component {
                     //if theres initialValues.id that means user accessed it from manage event and hence upon cancel will be routed back to the respective event page
                     //if not then go back to the events list page
                 }
+                disabled={loading}
               >
                 {/*the history.goBack sends user back to where they came, either from eventDetailed page or from EventDashboard */}
                 Cancel

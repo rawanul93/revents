@@ -119,7 +119,8 @@ class EventDetailedChat extends Component {
                       </Comment.Group>
                     ))}
                 </Comment>
-              ))}
+              ))
+            }
           </Comment.Group>
           {/* the form component we render here is for the original comments and not the replies. So we give it a parent id of 0 which means its the parent itself  */}
           <EventDetailedChatForm

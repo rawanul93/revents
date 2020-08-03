@@ -90,44 +90,105 @@ export const deletePhoto = (photo) =>
         }
 }
 
-export const setMainPhoto = (photo) =>
-    async (dispatch, getState, {getFirebase}) => {
-        const firebase = getFirebase(); //only need firebase because firebase is what is responsible for everything related to the user profile. Even though we are changing something inside firestore as well, firebase gives us the hook to change it without calling firestore specifically
+export const setMainPhoto = (photo) => //contains batch update. We will be getting all the events that the user is attending and update each of these events with the new main photo. We also want to update the user document itself with the new main photo.
+    async (dispatch, getState) => {
+        // const firebase = getFirebase(); //only need firebase because firebase is what is responsible for everything related to the user profile. Even though we are changing something inside firestore as well, firebase gives us the hook to change it without calling firestore specifically
+        const firestore = firebase.firestore(); //using the firebase api directly.
+        const user = firebase.auth().currentUser;
+        const today = new Date(); //we will NOT be updating photos for events that are in the past.
+        let userDocRef = firestore.collection('users').doc(user.uid);
+        let eventAttendeeRef = firestore.collection('event_attendee');
+        
+        
         try {
-            await firebase.updateProfile({
+            dispatch(asyncActionStart());
+            let batch = firestore.batch();
+           
+            batch.update(userDocRef, { //not commiting the queries here yet.
                 photoURL: photo.url
-            });
+            })
+
+            let eventQuery = await eventAttendeeRef
+                .where('userUid', '==', user.uid)
+                .where('eventDate', '>=', today)
+
+            let eventQuerySnap = await eventQuery.get();
+
+            for (let i = 0; i < eventQuerySnap.docs.length; i++) {
+                let eventDocRef = await firestore
+                    .collection('events')
+                    .doc(eventQuerySnap.docs[i].data().eventId);
+                let event = await eventDocRef.get(); //now for each of these documents we need to check if user is the host of the document. If so we need to update the hostPhotoURL as well as the attendees photoURLs. Otherwise just the attendees photos.
+                if (event.data().hostUid === user.uid) { //doing the update main photo for host.
+                    batch.update(eventDocRef, 
+                    {
+                        hostPhotoURL: photo.url,
+                        [`attendees.${user.uid}.photoURL`]: photo.url
+                    })
+                } else {
+                    batch.update(eventDocRef, 
+                    {
+                        [`attendees.${user.uid}.photoURL`]: photo.url
+                    })
+                }
+            }
+
+        await batch.commit();
+        console.log(batch);
+        dispatch(asyncActionFinish());
+
         } catch (error) {
             console.log(error);
+            dispatch(asyncActionError());
             throw new Error('Problem setting main photo');
         }
     }
 
 export const goingToEvent = (event) => 
-    async (dispatch, getState, {getFirebase, getFirestore}) => {
-        const firebase = getFirebase();
-        const firestore = getFirestore();
+    async (dispatch, getState) => {
+       
+        dispatch(asyncActionStart());
+
+        const firestore = firebase.firestore();
         const user = firebase.auth().currentUser;
         const profile = getState().firebase.profile; //getState gets us the firebase state from the reducer. We are getting the profile from firebase.profile and not auth because we dont keep auth updated.
         const attendee = {
             going: true,
-            joinDate: firestore.FieldValue.serverTimestamp(),
+            joinDate: new Date(),
             photoURL: profile.photoURL || '/assets/user/png',
             displayName: profile.displayName,
             host: false
         }
         try {
-            await firestore.update(`/events/${event.id}`, {
-                [`attendees.${user.uid}`]: attendee //add attendee to the event doc under attendees. We'll give this attendee a key of user Id that joined, using object notaion. Firestore will automatically add an attendee with this id and update it with our attendee object which we setup above.
+            let eventDocRef = firestore.collection('events').doc(event.id); //we want to monitor any changes in this events document so that if there are changes while this method is being called, this transaction will re-run so that it uses the latest version of that data.
+            let eventAttendeeDocRef = firestore.collection('event_attendee').doc(`${event.id}_${user.uid}`);
+
+            await firestore.runTransaction(async (transaction) => {
+                await transaction.get(eventDocRef) //as per transaction rules, first we do the read. We're using this to track our changes.
+                await transaction.update(eventDocRef, {
+                    [`attendees.${user.uid}`]: attendee //this is how we want to set up this document in our firestore.
+                })
+                await transaction.set(eventAttendeeDocRef, {
+                    eventId: event.id,
+                    userUid: user.uid,
+                    eventDate: event.date,
+                    host: false
+                })
             })
-            await firestore.set(`event_attendee/${event.id}_${user.uid}` , { //this is how we want to set up this document in our firestore.
-                eventId: event.id,
-                userUid: user.uid,
-                eventDate: event.date,
-                host: false
-            })
+
+            // await firestore.update(`/events/${event.id}`, {
+            //     [`attendees.${user.uid}`]: attendee 
+            // })
+            // await firestore.set(`event_attendee/${event.id}_${user.uid}` , { //this is how we want to set up this document in our firestore.
+            //     eventId: event.id,
+            //     userUid: user.uid,
+            //     eventDate: event.date,
+            //     host: false
+            // })
+            dispatch(asyncActionFinish());
             toastr.success('Success', 'You have signed up to the event')
         } catch (error) {
+            dispatch(asyncActionError());
             console.log(error)
             toastr.error('Oops', 'Problem signing up to the event')
         }

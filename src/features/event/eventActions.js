@@ -35,15 +35,37 @@ export const createEvent = (event) => {
 }
 
 export const updateEvent = (event) => {
-    return async (dispatch, getState, {getFirebase, getFirestore}) => {
-        const firestore = getFirestore();
-        // const firebase = getFirebase();
+    return async (dispatch, getState) => {
+        const firestore = firebase.firestore();
         try {
-            // console.log('111', firebase);
-            // console.log('222', getState().firebase);
-            await firestore.update(`events/${event.id}`, event)
+            dispatch(asyncActionStart());
+            let eventDocRef = firestore.collection('events').doc(event.id);
+            let dateEqual = getState().firestore.ordered.events[0].date.isEqual(event.date); //isEqual is a firestore timestamp method which we can use to compare the timestamp date to a javascript date.
+            if(!dateEqual) {
+                let batch = firestore.batch();
+                batch.update(eventDocRef, event) //updating the specific event in events collection
+
+                let eventAttendeeRef = firestore.collection('event_attendee');
+                let eventAttendeeQuery = await eventAttendeeRef.where('eventId', '==', event.id);
+                let eventAttendeeQuerySnap = await eventAttendeeQuery.get(); 
+
+                for (let i = 0; i < eventAttendeeQuerySnap.docs.length; i++) { //so we need the eventAttendeeSnap in order to know which docs to update. We loop through the docs in event_attendee that that match the event being updated and use the id of each doc to get the docRef which we need to pass to our batch function.
+                    let eventAttendeeDocRef = await firestore
+                        .collection('event_attendee')
+                        .doc(eventAttendeeQuerySnap.docs[i].id);
+                    
+                    batch.update(eventAttendeeDocRef, {
+                        eventDate: event.date
+                    })
+                }
+                await batch.commit();
+            } else {
+                await eventDocRef.update(event)
+            }
+            dispatch(asyncActionFinish());
             toastr.success('Success', 'Event has been updated');
         } catch {
+            dispatch(asyncActionError());
             toastr.error('Oops', 'Something went wrong')
         }}
 }

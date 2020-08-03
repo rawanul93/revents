@@ -31,13 +31,14 @@ const mapState = (state, ownProps) => {
   let event = {}; //so that it doesnt throw an error when an event cant be found
 
   if (state.firestore.ordered.events && state.firestore.ordered.events.length > 0) {
-    event = state.firestore.ordered.events.find(event => (eventId === event.id )) || state.events.find(event => eventId === event.id);
+    event = state.firestore.ordered.events.find(event => (eventId === event.id ));
   } //if eventId and events exist, we're getting the event by filtering through the list and matching the eventId. Even though we're getting only 1 event in return
 
   return {
     event, //when we're doing mapState, we're mapping this into the props
     auth: state.firebase.auth,
-    eventChat: !isEmpty(state.firebase.data.event_chat) && objectToArray(state.firebase.data.event_chat[eventId]) //using object bracket notation since the eventId will vary. We are getting the event chat info from firebase reducer where its found in data.
+    eventChat: !isEmpty(state.firebase.data.event_chat) && objectToArray(state.firebase.data.event_chat[eventId]), //using object bracket notation since the eventId will vary. We are getting the event chat info from firebase reducer where its found in data.
+    loading: state.async.loading
   };
 };
 
@@ -56,27 +57,35 @@ class EventDetailedPage extends Component  {
   }
   
   render() {
-    const { event, auth, goingToEvent, cancelGoingToEvent, addEventComment, eventChat } = this.props;
+    const { event, auth, goingToEvent, cancelGoingToEvent, addEventComment, eventChat, loading } = this.props;
     const attendees =  event && event.attendees && objectToArray(event.attendees); //objectToArray is found on helpers.js
     
     //Need these props to render which buttons we want to show the user when he/she goes to an event page.
-    const isHost = event.hostUid === auth.uid; //if hostUid = auth.uid then true o/w false
+    const isHost = event && event.hostUid === auth.uid; //if hostUid = auth.uid then true o/w false
     const isGoing = attendees && attendees.some(a => a.id === auth.uid) //.some returns a true as soon as the condition is met and false otherwise. We could've used .includes but that is only suitable for matching primitive data.
     const chatTree = !isEmpty(eventChat) && createDataTree(eventChat); //getting the replies as children to their respective parent comments.
     
     return (
-      <Fragment>
-        <Grid>
-          <GridColumn width={10}>
-            <EventDetailedHeader event={event} isGoing={isGoing} isHost={isHost} goingToEvent={goingToEvent} cancelGoingToEvent={cancelGoingToEvent}/>
-            <EventDetailedInfo event={event} />
-            <EventDetailedChat addEventComment={addEventComment} eventId={event.id} eventChat={chatTree}/>
-          </GridColumn>
-          <GridColumn width={6}>
-           <EventDetailedSidebar attendees={attendees} eventId={event.id}/> 
-          </GridColumn>
-        </Grid>
+      <div> 
+         {event && (
+            <Fragment>
+              <Grid>
+              <GridColumn width={10}>
+                <EventDetailedHeader event={event} isGoing={isGoing} isHost={isHost} goingToEvent={goingToEvent} cancelGoingToEvent={cancelGoingToEvent} loading={loading}/>
+                <EventDetailedInfo event={event} />
+                <EventDetailedChat addEventComment={addEventComment} eventId={event.id} eventChat={chatTree}/>
+              </GridColumn>
+              <GridColumn width={6}>
+              <EventDetailedSidebar attendees={attendees} eventId={event.id}/> 
+              </GridColumn>
+            </Grid>
       </Fragment>
+      )
+    
+    }
+      </div>
+       
+      
     );
   }
   

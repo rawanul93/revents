@@ -9,7 +9,7 @@ class EventDetailedChatForm extends Component {
         const { addEventComment, reset, eventId, closeForm, parentId } =  this.props; //we get the reset because connected this component to redux form
         addEventComment(eventId, values, parentId);
         reset();
-        if (parentId !== 0) {
+        if (parentId !== 0) { //parentId is 0 only for main comments. So we want to close the form only for the replies, whose parentId is !== 0.
             closeForm();
         }
     }

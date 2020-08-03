@@ -59,7 +59,6 @@ class EventDashboard extends Component {
   }
 
   componentDidUpdate = (prevProps) => { //this happens when we receive new props. It runs quite a few times so we only load events into our loadEvents state ONLY if we get new events in our events state i.e. prev state of events !== current state.
-    console.log('componentDidUpdate just ran')
     if(this.props.events !== prevProps.events) { //if there are new events loaded from firebase, it wont equal the events that were previously loaded which we access through prevProps.events which is the state before the update occurs when a user clicks on the more button.
       this.setState({
         loadedEvents: [...this.state.loadedEvents, ...this.props.events] //first it will be empty, but then when component updates we fill it with the first 2 events that are in the events state. Then as user scrolls down, we refresh our events state with 2 new events and so we add that in along with what was there previously which are the first 2 events. And this keeps on going until all the events are loaded.
