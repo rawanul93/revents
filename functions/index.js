@@ -1,6 +1,12 @@
+
+
 const functions = require('firebase-functions');
 const admin = require('firebase-admin'); //get access to the admin functionality. So we wont need permissions and have full rights to the application. 
 admin.initializeApp(functions.config().firebase);  //initialize the app.
+
+const objectToArray = object => {
+    return Object.entries(object).map(e => Object.assign({}, e[1], {id: e[0]})) 
+}
 
 const newActivity = (type, event, id) => {
     return {
@@ -55,5 +61,38 @@ exports.cancelActivity = functions.firestore
         }
 
     }) 
+
+exports.deleteEventAttendeeDoc = functions.firestore
+    .document('events/{eventId}')
+    .onUpdate( async (event, context) => {
+        let updatedEvent = event.after.data();
+        let previousEventData = event.before.data();
+        
+        const prevAttendees =  previousEventData.attendees && objectToArray(previousEventData.attendees);
+        const updatedAttendees = updatedEvent.attendees && objectToArray(updatedEvent.attendees);
+        
+        let attendeeToDelete;
+
+        if (prevAttendees.length > updatedAttendees.length) { //only execute when number of attendees has decreased which only happens if someone cancels their place.
+
+            for( let i = 0; i < prevAttendees.length; i++)  {
+                  
+                let joined = updatedAttendees.some(attendee => attendee.id === prevAttendees[i].id)
+                
+                if (!joined) {
+                   attendeeToDelete = prevAttendees[i]
+                }
+            }
+
+            try {
+                const docRef = admin.firestore().collection('event_attendee').doc(`${context.params.eventId}_${attendeeToDelete.id}`);
+                await docRef.delete();
+                return console.log('deletion of doc is successful', docRef);
+            } catch(err) {
+                return console.log('Error deleting document', err);
+            }
+        } else return false;
+
+    })
 
 

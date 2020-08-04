@@ -203,8 +203,9 @@ export const cancelGoingToEvent = (event) =>
             await firestore.update(`events/${event.id}`, { //cant directily access the attendees, so need to use object bracket notation, kind of like an array.
                 [`attendees.${user.uid}`] : firestore.FieldValue.delete() //remove a specific field in a document, in this case its deleting the attendee with the key of of this user who cancels going to the event.
             })
-            await firestore.delete(`event_attendees/${event.id}_${user.uid}`); //using the delete() method directly here cause we're deleting the entire document here and not just a specific field or something
             toastr.success('Success', 'You have removed yourself from the event')
+
+           // await firestore.delete(`event_attendees/${event.id}_${user.uid}`); //using the delete() method directly here cause we're deleting the entire document here and not just a specific field or something
         } catch (error) {
             console.log(error);
             toastr.error('Oops', 'Something went wrong');

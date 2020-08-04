@@ -8,6 +8,7 @@ import { withFirestore, firebaseConnect, isEmpty } from 'react-redux-firebase'; 
 import { compose } from 'redux'; //to have cleaner code for exporting this component that has so many higher order components i.e. tidy up the code in the bottom
 import { goingToEvent, cancelGoingToEvent } from "../../user/userActions";
 import { addEventComment } from "../eventActions";
+import { openModal } from "../../modals/modalActions";
 
 //components
 import EventDetailedHeader from "./EventDetailedHeader";
@@ -22,7 +23,8 @@ import { objectToArray, createDataTree } from "../../../app/common/util/helpers"
 const action = {
   goingToEvent,
   cancelGoingToEvent,
-  addEventComment
+  addEventComment,
+  openModal
 }
 
 
@@ -57,23 +59,25 @@ class EventDetailedPage extends Component  {
   }
   
   render() {
-    const { event, auth, goingToEvent, cancelGoingToEvent, addEventComment, eventChat, loading } = this.props;
+    const { event, auth, goingToEvent, cancelGoingToEvent, addEventComment, eventChat, loading, openModal } = this.props;
     const attendees =  event && event.attendees && objectToArray(event.attendees); //objectToArray is found on helpers.js
     
     //Need these props to render which buttons we want to show the user when he/she goes to an event page.
     const isHost = event && event.hostUid === auth.uid; //if hostUid = auth.uid then true o/w false
     const isGoing = attendees && attendees.some(a => a.id === auth.uid) //.some returns a true as soon as the condition is met and false otherwise. We could've used .includes but that is only suitable for matching primitive data.
     const chatTree = !isEmpty(eventChat) && createDataTree(eventChat); //getting the replies as children to their respective parent comments.
-    
+    const authenticated = auth.isLoaded && !auth.isEmpty;
     return (
       <div> 
          {event && (
             <Fragment>
               <Grid>
               <GridColumn width={10}>
-                <EventDetailedHeader event={event} isGoing={isGoing} isHost={isHost} goingToEvent={goingToEvent} cancelGoingToEvent={cancelGoingToEvent} loading={loading}/>
+                <EventDetailedHeader event={event} isGoing={isGoing} isHost={isHost} goingToEvent={goingToEvent} cancelGoingToEvent={cancelGoingToEvent} loading={loading} authenticated={authenticated} openModal={openModal} />
                 <EventDetailedInfo event={event} />
-                <EventDetailedChat addEventComment={addEventComment} eventId={event.id} eventChat={chatTree}/>
+                {authenticated && 
+                  <EventDetailedChat addEventComment={addEventComment} eventId={event.id} eventChat={chatTree}/>
+                }
               </GridColumn>
               <GridColumn width={6}>
               <EventDetailedSidebar attendees={attendees} eventId={event.id}/> 

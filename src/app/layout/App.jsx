@@ -1,8 +1,10 @@
 import React, { Component, Fragment } from "react";
-import EventDashboard from "../../features/event/eventDashboard/EventDashboard";
-import NavBar from "../../features/nav/navBar/NavBar";
 import { Container } from "semantic-ui-react";
 import { Route, Switch, withRouter } from "react-router-dom";
+
+//components
+import EventDashboard from "../../features/event/eventDashboard/EventDashboard";
+import NavBar from "../../features/nav/navBar/NavBar";
 import HomePage from "../../features/home/HomePage";
 import EventDetailedPage from "../../features/event/eventDetailed/EventDetailedPage";
 import PeopleDashboard from "../../features/user/peopleDashboard/PeopleDashboard";
@@ -12,7 +14,9 @@ import EventForm from "../../features/event/eventForm/EventForm";
 import TestComponent from "../../features/testarea/TestComponent";
 import ModalManager from "../../features/modals/ModalManager";
 
-//Fragment doesnt show up in our retunred HTML
+//redux
+import { UserIsAuthenticated } from "../../features/auth/authWrapper";
+
 
 class App extends Component {
   render() {
@@ -36,10 +40,11 @@ class App extends Component {
                 because otherwise when we click createEvent while EventForm is open through manageEvent, it doesnt rerender the form.*/}
                   <Route exact path="/events" component={EventDashboard}></Route> 
                   <Route path="/events/:id" component={EventDetailedPage}></Route>
-                  <Route path="/people" component={PeopleDashboard}></Route>
-                  <Route path="/profile/:id" component={UserDetailedPage}></Route>
-                  <Route path="/settings" component={SettingsDashboard}></Route>
-                  <Route path={["/createEvent", "/manage/:id"]} component={EventForm}></Route>
+
+                  <Route path="/people" component={UserIsAuthenticated(PeopleDashboard)}></Route>
+                  <Route path="/profile/:id" component={UserIsAuthenticated(UserDetailedPage)}></Route>
+                  <Route path="/settings" component={UserIsAuthenticated(SettingsDashboard)}></Route>
+                  <Route path={["/createEvent", "/manage/:id"]} component={UserIsAuthenticated(EventForm)}></Route>
                   {/*with react router 5, we can now pass in arrays as the path, so both the above code will open up EventForm. But since they both have different key, t will be rendered accordingly */}
                   <Route path="/test" component={TestComponent}></Route>
                 </Switch>
