@@ -1,7 +1,7 @@
 import React, { Fragment } from "react";
-import { Segment, Item, Header, Button, Image } from "semantic-ui-react";
+import { Segment, Item, Header, Button, Image, Label } from "semantic-ui-react";
 import { Link } from "react-router-dom";
-import { format } from 'date-fns';
+import { format } from "date-fns";
 
 const eventImageStyle = {
   //makes the image darker
@@ -17,7 +17,16 @@ const eventImageTextStyle = {
   color: "white"
 };
 
-const EventDetailedHeader = ({ event, isHost, isGoing, goingToEvent, cancelGoingToEvent, loading, authenticated, openModal }) => {
+const EventDetailedHeader = ({
+  event,
+  isHost,
+  isGoing,
+  goingToEvent,
+  cancelGoingToEvent,
+  loading,
+  authenticated,
+  openModal
+}) => {
   return (
     <Segment.Group>
       <Segment basic attached="top" style={{ padding: "0" }}>
@@ -36,9 +45,19 @@ const EventDetailedHeader = ({ event, isHost, isGoing, goingToEvent, cancelGoing
                   content={event.title}
                   style={{ color: "white" }}
                 />
-                <p>{event.date && format(event.date.toDate(), 'EEEE do LLL')}</p>
                 <p>
-                  Hosted by <strong><Link to={`/profile/${event.hostUid}`} style={{color: 'white'}}>{event.hostedBy}</Link></strong>
+                  {event.date && format(event.date.toDate(), "EEEE do LLL")}
+                </p>
+                <p>
+                  Hosted by{" "}
+                  <strong>
+                    <Link
+                      to={`/profile/${event.hostUid}`}
+                      style={{ color: "white" }}
+                    >
+                      {event.hostedBy}
+                    </Link>
+                  </strong>
                 </p>
               </Item.Content>
             </Item>
@@ -47,31 +66,52 @@ const EventDetailedHeader = ({ event, isHost, isGoing, goingToEvent, cancelGoing
       </Segment>
 
       <Segment attached="bottom" clearing>
-        {!isHost &&
-           <Fragment>
-              {isGoing && <Button onClick={() => cancelGoingToEvent(event)}> Cancel My Place </Button>}
-              
-              {!isGoing && authenticated && 
-                <Button color="teal" onClick={() => goingToEvent(event)} loading={loading}
-                  >JOIN THIS EVENT
-                </Button>
-              }
-
-              {!authenticated && 
-                <Button color="teal" onClick={() => openModal('UnauthModal')} loading={loading}
-                  >JOIN THIS EVENT
-                </Button>
-              }
-
-              </Fragment>
-        }              
-           
-        {
-          isHost &&
-            <Button as={Link} to={`/manage/${event.id}`} color="orange" floated='right'>
-              Manage Event
-            </Button>
+        { event.cancelled && 
+            <Label size='large' color='red' content='This event has been cancelled' />
         }
+
+        {!isHost && 
+          <Fragment>
+            {isGoing && (
+              <Button onClick={() => cancelGoingToEvent(event)}>
+                {" "}
+                Cancel My Place{" "}
+              </Button>
+            )}
+
+            {!isGoing && authenticated && !event.cancelled &&
+              <Button
+                color="teal"
+                onClick={() => goingToEvent(event)}
+                loading={loading}
+              >
+                JOIN THIS EVENT
+              </Button>
+            }
+
+            {!authenticated && !event.cancelled &&
+              <Button
+                color="teal"
+                onClick={() => openModal("UnauthModal")}
+                loading={loading}
+              >
+                JOIN THIS EVENT
+              </Button>
+            }
+
+          </Fragment>
+        }
+
+        {isHost && (
+          <Button
+            as={Link}
+            to={`/manage/${event.id}`}
+            color="orange"
+            floated="right"
+          >
+            Manage Event
+          </Button>
+        )}
       </Segment>
     </Segment.Group>
   );

@@ -15,6 +15,8 @@ import EventDetailedHeader from "./EventDetailedHeader";
 import EventDetailedInfo from "./EventDetailedInfo";
 import EventDetailedChat from "./EventDetailedChat";
 import EventDetailedSidebar from "./EventDetailedSidebar";
+import LoadingComponent from '../../../app/layout/LoadingComponent';
+import NotFound from '../../../app/layout/NotFound';
 
 //others
 import { objectToArray, createDataTree } from "../../../app/common/util/helpers";
@@ -33,14 +35,15 @@ const mapState = (state, ownProps) => {
   let event = {}; //so that it doesnt throw an error when an event cant be found
 
   if (state.firestore.ordered.events && state.firestore.ordered.events.length > 0) {
-    event = state.firestore.ordered.events.find(event => (eventId === event.id ));
+    event = state.firestore.ordered.events.find(event => (eventId === event.id )) || {};
   } //if eventId and events exist, we're getting the event by filtering through the list and matching the eventId. Even though we're getting only 1 event in return
 
   return {
     event, //when we're doing mapState, we're mapping this into the props
     auth: state.firebase.auth,
     eventChat: !isEmpty(state.firebase.data.event_chat) && objectToArray(state.firebase.data.event_chat[eventId]), //using object bracket notation since the eventId will vary. We are getting the event chat info from firebase reducer where its found in data.
-    loading: state.async.loading
+    loading: state.async.loading, //this loading is for the async actions like joining an event or cancelling a place.
+    requesting: state.firestore.status.requesting //we need this to set loading indicators
   };
 };
 
@@ -59,15 +62,30 @@ class EventDetailedPage extends Component  {
   }
   
   render() {
-    const { event, auth, goingToEvent, cancelGoingToEvent, addEventComment, eventChat, loading, openModal } = this.props;
-    const attendees =  event && event.attendees && objectToArray(event.attendees); //objectToArray is found on helpers.js
+    const { event, auth, goingToEvent, cancelGoingToEvent, addEventComment, eventChat, loading, openModal, match, requesting } = this.props;
+    const attendees =  event && event.attendees && 
+      objectToArray(event.attendees) //objectToArray is found on helpers.js
+      .sort((a, b) => {
+        return a.joinDate.toDate() - b.joinDate.toDate(); //sorting the attendees so that the host who's join date is the earliest always shows up on top.
+      }); 
     
     //Need these props to render which buttons we want to show the user when he/she goes to an event page.
     const isHost = event && event.hostUid === auth.uid; //if hostUid = auth.uid then true o/w false
     const isGoing = attendees && attendees.some(a => a.id === auth.uid) //.some returns a true as soon as the condition is met and false otherwise. We could've used .includes but that is only suitable for matching primitive data.
     const chatTree = !isEmpty(eventChat) && createDataTree(eventChat); //getting the replies as children to their respective parent comments.
     const authenticated = auth.isLoaded && !auth.isEmpty;
+    const loadingEvent = requesting[`events/${match.params.id}`] //object notation
+
+    if (loadingEvent) {
+      return <LoadingComponent />
+    }
+
+    if (Object.keys(event).length === 0) {
+      return <NotFound />
+    }
+   
     return (
+
       <div> 
          {event && (
             <Fragment>

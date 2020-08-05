@@ -33,7 +33,7 @@ const mapState = (state, ownProps) => { //ownprops to get the params we get in o
   return {
       profile,
       userUid,
-      events: state.events, //getting from our events reducer because we dispatch our FETCH_EVENTS action in the getUserEvents action.
+      events: state.events.userEvents, //getting from our events reducer because we dispatch our FETCH_EVENTS action in the getUserEvents action.
       eventsLoading: state.async.loading,
       auth: state.firebase.auth,
       photos: state.firestore.ordered.photos,
@@ -45,7 +45,7 @@ const mapState = (state, ownProps) => { //ownprops to get the params we get in o
 class UserDetailedPage extends Component {
 
   async componentDidMount(){
-    let events = await this.props.getUserEvents(this.props.userUid);
+    await this.props.getUserEvents(this.props.userUid);
   }
 
   changeTab = (e, data) => {

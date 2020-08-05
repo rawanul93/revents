@@ -13,7 +13,7 @@ const actions = {
   socialLogin
 };
 
-const LoginForm = ({ login, handleSubmit, error, socialLogin }) => {
+const LoginForm = ({ login, handleSubmit, error, socialLogin, submitting }) => { //submitting is from redux forms
   //we have handleSubmit as a part of the redux props
   //we'll do handleSubmit(login) i.e. were passing in what we add in the login form to the action login.
   //login action therefore is receiving what we're adding in the form and thats what we defined as 'creds' in our authReducer.
@@ -34,7 +34,7 @@ const LoginForm = ({ login, handleSubmit, error, socialLogin }) => {
           placeholder="password"
         />
         {error && <Label basic color='red'>{error}</Label>}
-        <Button fluid size="large" color="teal">
+        <Button fluid size="large" color="teal" loading={submitting}>
           Login
         </Button>
         <Divider horizontal >Or</Divider>

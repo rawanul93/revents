@@ -15,7 +15,7 @@ export const createEvent = (event) => {
         const photoURL = getState().firebase.profile.photoURL; // we can use getState to get the photo because firebase automatically loads up the profile when a user logs in because in our auth actions we set up that when a user signs in, the firebase auth is immediately updated
         const newEvent = createNewEvent(user, photoURL, event) // this is in the helper.js file. We kept it there so as to avoid the clutter.
         try {
-           
+            dispatch(asyncActionStart());
             let createdEvent = await firestore.add('events', newEvent); // adding newEvent to the event collection. The createdEvent is the document snapShot. So now we can use the createdEvent id. We use .add when we add a document where we want firestore to give a unique id when creating it. I.e. we are not exclusively setting a specific id or referring to one.
             
             await firestore.set(`event_attendee/${ //doing .set here because unlike the above where we use .add, we know the id we want to give it.
@@ -26,9 +26,10 @@ export const createEvent = (event) => {
                 host: true
             })
             toastr.success('Success', 'Event has been created');
-
+            dispatch(asyncActionFinish());
             return createdEvent; // since this is a async function, it automatically returns with a Promise. So we can return our createdEvent like this.
         } catch (error) {
+            dispatch(asyncActionError());
             toastr.error('Oops', 'Something went wrong')
         }
     }
@@ -115,7 +116,6 @@ async (dispatch, getState) => {
 
         let events = [];
         for (let i = 0; i < querySnap.docs.length; i++) {
-            console.log(querySnap.docs[i].data())
             let evt = {
                 ...querySnap.docs[i].data(), //the data() method retrieves all the fields from the doc as an object. We're also creating and populating the id as a field here, becasue even though the events all have their ids its not a field inside the doc itself which is what we're making the array out of.
                 id: querySnap.docs[i].id

@@ -2,7 +2,7 @@ import { toastr } from "react-redux-toastr";
 import { asyncActionStart, asyncActionFinish, asyncActionError } from "../async/asyncActions";
 import cuid from 'cuid';
 import firebase from '../../app/config/firebase';
-import { FETCH_EVENTS } from "../event/eventConstants";
+import { FETCH_USER_EVENTS } from "../event/eventConstants";
 
 export const updateProfile = (user) => 
 async (dispatch, getState, { getFirebase }) => { //everything to do with users profile and authentication is controlled by firebase instance.
@@ -254,7 +254,7 @@ export const getUserEvents = (userUid, activeTab) =>
                 let evt = await firestore.collection('events').doc(querySnap.docs[i].data().eventId).get(); //using the eventIds we get from the event_attendee collection and use that to query and get the actual events pertaining to those ids from the events collection.
                 events.push({...evt.data(), id: evt.id});
             }
-            dispatch({type: FETCH_EVENTS, payload: {events}}) //we do this so that we get it in our reducer.
+            dispatch({type: FETCH_USER_EVENTS, payload: {events}}) //we do this so that we get it in our reducer.
 
             dispatch(asyncActionFinish());
             return querySnap;

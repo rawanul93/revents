@@ -45,7 +45,7 @@ const RegisterForm = ({handleSubmit, registerUser, error, invalid, submitting}) 
           />
           {error && <Label basic color='red'>{error}</Label>}
           {/*we need to handle firebase related errors exclusively. The isRequired validation is covered by our TextInput components, but we need to handle the firebase errors separately*/}
-          <Button disable={invalid || submitting} fluid size="large" color="teal">
+          <Button disable={invalid || submitting} fluid size="large" color="teal" loading={submitting}>
             Register
           </Button>
           <Divider horizontal >Or</Divider>

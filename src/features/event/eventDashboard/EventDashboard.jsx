@@ -17,7 +17,7 @@ const query = [
 
 const mapState = (state) => ({
   //events: state.firestore.ordered.events //this is how we would get events if we were listening to the firestore via firestoreConnect
-  events: state.events, //from our event reducer. This is the number of events currently loaded from firebase via the getEventsForDashboard method.
+  events: state.events.events, //from our event reducer. This is the number of events currently loaded from firebase via the getEventsForDashboard method.
   loading: state.async.loading,
   activities: state.firestore.ordered.activity //getting activities by listening to firestore
 });
@@ -38,7 +38,6 @@ class EventDashboard extends Component {
   };
   async componentDidMount() {    //when we load the page and this component is mounted, getEventsForDashboard doesnt get a lastEvent passed in and only 2 events will be loaded since thats the limit we set. Already the moreEvents local state var is set to false by default and we check here whether there are more events in the database than the 2 events we limit it to loading when we mount this. If there are more than we set that to true and hence provide users with a button to load more events and scroll futther down
     let next = await this.props.getEventsForDashboard(); //since we're returning the query snapshot from this action, it will be stored in this next variable.
-    console.log(this.props.events)
     if (next.docs.length === 0) {
       this.setState({
         loadingInitial: false,

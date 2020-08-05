@@ -76,31 +76,13 @@ class EventForm extends Component {
 
   async componentDidMount() {
     const { firestore, match} = this.props;
-    await firestore.setListener(`events/${match.params.id}`); //automatically sets our listeners for us. We're doing it manually here.
-    // if(event && match.params.id === event.id) {
-    //   await firestore.setListener(`events/${match.params.id}`); //automatically sets our listeners for us. We're doing it manually here.
-    //   //we have the setListener instead of .get because now we're getting live data from firestore which we need in order to see the live changes for the cancelToggle button
-    //   return;
-    // }
-    // if(location.pathname === '/createEvent') {
-    //  return; //so  if the doc doesnt exist we'll send users back to the list
-    // } 
-    // else history.push('/');
-    
-    
+    await firestore.setListener(`events/${match.params.id}`); //automatically sets our listeners for us. We're doing it manually here.    
   }
 
   async componentWillUnmount() {
     const { firestore, match} = this.props;
     await firestore.unsetListener(`events/${match.params.id}`);
-  //   } else if (event.exists) { 
-  //     this.setState({//if the event does exist. We definitely want to populate our local venueLatLng state because otherwise when we update an event, if the local state venueLatLng is empty, that is what is assigned in the updated event.
-  //       venueLatLng: event.data().venueLatLng
-  //     })
-  
-     
-  // }
-}
+  }
 
   handleCitySelect = selectedCity => {
     geocodeByAddress(selectedCity)
@@ -227,6 +209,8 @@ class EventForm extends Component {
               >
                 {/*the history.goBack sends user back to where they came, either from eventDetailed page or from EventDashboard */}
                 Cancel
+
+                
               </Button>
               {   
                   location.pathname !== '/createEvent' && 

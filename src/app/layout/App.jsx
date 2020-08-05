@@ -13,6 +13,8 @@ import SettingsDashboard from "../../features/user/settings/SettingsDashboard";
 import EventForm from "../../features/event/eventForm/EventForm";
 import TestComponent from "../../features/testarea/TestComponent";
 import ModalManager from "../../features/modals/ModalManager";
+import NotFound from "./NotFound";
+
 
 //redux
 import { UserIsAuthenticated } from "../../features/auth/authWrapper";
@@ -47,6 +49,7 @@ class App extends Component {
                   <Route path={["/createEvent", "/manage/:id"]} component={UserIsAuthenticated(EventForm)}></Route>
                   {/*with react router 5, we can now pass in arrays as the path, so both the above code will open up EventForm. But since they both have different key, t will be rendered accordingly */}
                   <Route path="/test" component={TestComponent}></Route>
+                  <Route component={NotFound}/>
                 </Switch>
 
               </Container>
