@@ -95,4 +95,48 @@ exports.deleteEventAttendeeDoc = functions.firestore
 
     })
 
+exports.addFollowersDoc = functions.firestore
+    .document('users/{userId}/following/{followingId}')
+    .onCreate(async (event, context) => {
+        const followingId = context.params.followingId;
+        const followerId = context.params.userId;
+
+        try {
+            let followerDocRef = admin.firestore().collection('users').doc(followerId);
+            let docSnapshot = await followerDocRef.get();
+            let follower = docSnapshot.data();
+
+            return admin.firestore()
+                .collection('users')
+                .doc(followingId)
+                .collection('followers')
+                .doc(followerId)
+                .set({
+                    displayName: follower.displayName,
+                    city: follower.city || 'unknown city',
+                    photoURL: follower.photoURL || '/assets/user.png',
+                    profilePath: `/profile/${followerId}`
+                })
+
+        } catch (err) {
+            return console.log(err);
+        }
+    })
+
+exports.deleteFollowerDoc = functions.firestore
+    .document('users/{userId}/following/{followingId}')
+    .onDelete(async (event, context) => {
+        const followingId = context.params.followingId;
+        const followerId = context.params.userId;
+
+        try {
+            docRef = admin.firestore().collection('users').doc(followingId).collection('followers').doc(followerId);
+            await docRef.delete();
+            return console.log(docRef + ' deleted');
+
+        } catch (err) {
+            return console.log(err);
+        }
+
+    })
 

@@ -59,9 +59,10 @@ export const uploadProfileImage = (file, fileName) =>
                 doc: user.uid,
                 subcollections: [{collection: 'photos'}] //creates a new subcollection for our photos if there is none to begin with.
             }, { //also specify what we are adding
-                name: imageName, //when we delete photos, firebase needs the name of the file.
-                url: downloadURL
-            })
+                    name: imageName, //when we delete photos, firebase needs the name of the file.
+                    url: downloadURL
+                }
+            )
 
             dispatch(asyncActionFinish());
 
@@ -71,6 +72,56 @@ export const uploadProfileImage = (file, fileName) =>
         }
 
 }
+
+export const followUser = (followedUser) =>
+    async (dispatch, getState, {getFirebase, getFirestore} ) => {
+        const firebase = getFirebase();
+        const firestore = getFirestore();
+        const user = firebase.auth().currentUser;
+        
+        try {
+            dispatch(asyncActionStart());
+
+            await firestore.set(
+           
+                {
+                    collection: 'users',
+                    doc: user.uid,
+                    subcollections: [{collection: 'following', doc: followedUser.id}]
+                }, {
+                    displayName: followedUser.displayName,
+                    photoURL: followedUser.photoURL,
+                    city: followedUser.city || 'none',
+                    profilePath: `/profile/${followedUser.id}`
+                }
+            );
+
+            dispatch(asyncActionFinish());
+
+        } catch (err) {
+            dispatch(asyncActionError());
+            console.log(err);
+        }
+
+    } 
+
+export const unfollowUser = (unfollowedUser) => 
+    async ( dispatch, getState, { getFirebase, getFirestore }) => {
+        const user = firebase.auth().currentUser;
+        const firestore = firebase.firestore();
+
+        try {
+            const docRef = firestore.collection('users').doc(user.uid).collection('following').doc(unfollowedUser.id);
+            await docRef.delete();
+
+        } catch (err) {
+            console.log(err);
+        }
+
+
+    }
+
+
 
 export const deletePhoto = (photo) => 
     async (dispatch, getState, {getFirebase, getFirestore }) => {
@@ -155,7 +206,7 @@ export const goingToEvent = (event) =>
         const attendee = {
             going: true,
             joinDate: new Date(),
-            photoURL: profile.photoURL || '/assets/user/png',
+            photoURL: profile.photoURL || '/assets/user.png',
             displayName: profile.displayName,
             host: false
         }
@@ -264,3 +315,5 @@ export const getUserEvents = (userUid, activeTab) =>
             dispatch(asyncActionError());
         }
     }
+
+

@@ -10,7 +10,8 @@ class EventActivityItem extends Component {
       case 'newEvent': //if its a new event
         return (
           <div>
-            New Event!{' '}
+            New Event!
+            <br/>
             <Feed.User
               as={Link}
               to={{ pathname: '/profile/' + activity.hostUid }} //remember we are returning the activity
@@ -26,7 +27,8 @@ class EventActivityItem extends Component {
       case 'cancelledEvent':
         return (
           <div>
-            Event Cancelled!{' '}
+            Event Cancelled!
+            <br/>
             <Feed.User
               as={Link}
               to={{ pathname: '/profile/' + activity.hostUid }}

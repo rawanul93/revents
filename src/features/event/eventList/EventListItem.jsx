@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Segment, Item, Icon, List, Button, Label } from "semantic-ui-react";
+import { Segment, Item, Icon, List, Button, Label, Header } from "semantic-ui-react";
 import EventListAttendee from "./EventListAttendee";
 import { Link } from "react-router-dom";
 import { format } from 'date-fns';
@@ -29,15 +29,19 @@ class EventListItem extends Component {
         </Segment>
         <Segment>
           <span>
-            <Icon name='clock' /> {format(event.date.toDate(), 'EEEE do LLL')} at
-            {format(event.date.toDate(), 'h:mm a')}| {/* toDate() is a function provided by firebase and it converts timestamps to javascript dates*/}
+            <Icon name='clock' /> 
+            <span style={{fontSize: '15px', marginLeft:'5px'}}>
+              <span style={{marginRight: '10px'}}>{format(event.date.toDate(), 'EEEE do LLL')}</span>
+              {format(event.date.toDate(), 'h:mm a')} {/* toDate() is a function provided by firebase and it converts timestamps to javascript dates*/}
+            </span>
+
+            <div style={{height:'10px'}}></div>
+           
             <Icon name="marker" /> {event.venue}
           </span>
         </Segment>
         <Segment secondary>
-          {/*colours it different */}
           <List horizontal>
-            {/*check of event has attenddes or not. Otherwise the code wont run */}
             {event.attendees && //making sure if we have attendees or not
               objectToArray(event.attendees).map((attendee) => ( //object.values to conver an object to its subsequent array.
                 <EventListAttendee key={attendee.id} attendee={attendee} /> //we're passing in the index of the array to use as the key since our attendees dont have keys anymore
